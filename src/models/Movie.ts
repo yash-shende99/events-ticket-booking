@@ -2,15 +2,17 @@ import mongoose, { Schema, Document } from "mongoose";
 
 export interface IMovie extends Document {
   title: string;
-  description: string;
-  posterImage: string;
-  backdropImage?: string;
-  duration: number; // in minutes
-  releaseDate: Date;
-  genre: string[];
-  language: string[];
-  cast: { name: string; role: string; image?: string }[];
-  rating?: number;
+  rating: string;
+  votes: string;
+  formats: string[];
+  languages: string[];
+  duration: string;
+  genres: string[];
+  certification: string;
+  releaseDate: string;
+  poster: string;
+  about: string;
+  cast: { name: string; role: string; image: string }[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -18,25 +20,28 @@ export interface IMovie extends Document {
 const MovieSchema: Schema = new Schema(
   {
     title: { type: String, required: true },
-    description: { type: String, required: true },
-    posterImage: { type: String, required: true },
-    backdropImage: { type: String },
-    duration: { type: Number, required: true },
-    releaseDate: { type: Date, required: true },
-    genre: { type: [String], required: true },
-    language: { type: [String], required: true },
+    rating: { type: String, required: true },
+    votes: { type: String, required: true },
+    formats: { type: [String], required: true },
+    languages: { type: [String], required: true },
+    duration: { type: String, required: true },
+    genres: { type: [String], required: true },
+    certification: { type: String, required: true },
+    releaseDate: { type: String, required: true },
+    poster: { type: String, required: true },
+    about: { type: String, required: true },
     cast: [
       {
         name: { type: String, required: true },
         role: { type: String, required: true },
-        image: { type: String },
+        image: { type: String, required: true },
       },
-    ],
-    rating: { type: Number, default: 0 },
+    ]
   },
   {
     timestamps: true,
   }
 );
 
+if (mongoose.models.Movie) delete mongoose.models.Movie;
 export const Movie = mongoose.models.Movie || mongoose.model<IMovie>("Movie", MovieSchema);
