@@ -45,3 +45,13 @@ AGENTS.md
 CLAUDE.md
 agents.md
 claude.md
+
+# Placement Assignment Exclusions
+# Do not commit the reference folder to avoid pushing external code/assets
+/ref/
+
+# IDE and OS files
+.vscode/
+.idea/
+Thumbs.db
+*.log
