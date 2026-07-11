@@ -2,15 +2,18 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 interface BookTicketsButtonProps {
+  movieId: string;
   movieTitle: string;
   certification: string;
   formats: string[];
   languages: string[];
 }
 
-export default function BookTicketsButton({ movieTitle, certification, formats, languages }: BookTicketsButtonProps) {
+export default function BookTicketsButton({ movieId, movieTitle, certification, formats, languages }: BookTicketsButtonProps) {
+  const router = useRouter();
   const [showAgeModal, setShowAgeModal] = useState(false);
   const [showFormatModal, setShowFormatModal] = useState(false);
 
@@ -83,7 +86,14 @@ export default function BookTicketsButton({ movieTitle, certification, formats, 
                   </div>
                   <div className="px-4 py-4 flex gap-3 flex-wrap">
                     {formats.map((format, fIdx) => (
-                      <button key={fIdx} className="px-4 py-1.5 rounded-full border border-gray-300 text-[#f84464] hover:bg-red-50 text-sm font-medium transition">
+                      <button 
+                        key={fIdx} 
+                        onClick={() => {
+                          setShowFormatModal(false);
+                          router.push(`/movies/${movieId}/buytickets?lang=${lang}&format=${format}`);
+                        }}
+                        className="px-4 py-1.5 rounded-full border border-gray-300 text-[#f84464] hover:bg-red-50 text-sm font-medium transition"
+                      >
                         {format}
                       </button>
                     ))}

@@ -98,6 +98,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ i
 
             {/* Book Button */}
             <BookTicketsButton 
+              movieId={MOVIE._id.toString()}
               movieTitle={MOVIE.title}
               certification={MOVIE.certification}
               formats={MOVIE.formats}
