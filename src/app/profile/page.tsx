@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { signOut } from "next-auth/react";
 
 export default function ProfilePage() {
   const router = useRouter();
@@ -72,10 +73,7 @@ export default function ProfilePage() {
 
   const handleLogout = async () => {
     try {
-      await fetch("/api/auth/logout", { method: "POST" });
-      router.push("/");
-      router.refresh();
-      toast.success("Logged out successfully");
+      await signOut({ callbackUrl: "/" });
     } catch (err) {
       toast.error("Logout failed");
     }

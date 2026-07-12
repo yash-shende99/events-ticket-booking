@@ -1,20 +1,15 @@
-import Navbar from "@/components/Navbar";
-import SubNavbar from "@/components/SubNavbar";
 import HeroCarousel from "@/components/HeroCarousel";
 import RecommendedMovies from "@/components/RecommendedMovies";
 import BestOfLiveEvents from "@/components/BestOfLiveEvents";
 import Premieres from "@/components/Premieres";
 import EventsNearYou from "@/components/EventsNearYou";
 import OutdoorEvents from "@/components/OutdoorEvents";
-import Footer from "@/components/Footer";
 import Image from "next/image";
 
 export default function Home() {
   return (
     <main className="min-h-screen bg-gray-100">
-      <Navbar />
-      <SubNavbar />
-      
+                  
       <HeroCarousel />
       
       <RecommendedMovies />
@@ -39,7 +34,7 @@ export default function Home() {
       <EventsNearYou />
       <OutdoorEvents />
 
-      <Footer />
     </main>
   );
 }
+

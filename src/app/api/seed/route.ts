@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { Movie } from "@/models/Movie";
+import { Theater } from "@/models/Theater";
+import { Showtime } from "@/models/Showtime";
 import connectDB from "@/lib/db";
 
 const MOVIES_DB = [
@@ -95,12 +97,89 @@ const MOVIES_DB = [
   }
 ];
 
+const THEATERS_DB = [
+  {
+    name: "Cinepolis: Nexus Seawoods, Nerul, Navi Mumbai",
+    amenities: ["M-Ticket", "Food & Beverage"],
+  },
+  {
+    name: "Cinepolis: Lake Shore, Thane (EX Viviana Mall)",
+    amenities: ["M-Ticket"],
+  },
+  {
+    name: "BMX Cinemas(BalajiMovieplex): Littleworld Kharghar",
+    amenities: ["M-Ticket", "Food & Beverage"],
+  },
+  {
+    name: "INOX Megaplex: Sky City Mall, Borivali",
+    amenities: ["M-Ticket", "Food & Beverage"],
+  },
+  {
+    name: "INOX: R-City, Ghatkopar",
+    amenities: ["M-Ticket", "Food & Beverage"],
+  }
+];
+
 export async function GET() {
   try {
     await connectDB();
+    
+    // Clear existing
     await Movie.deleteMany({});
-    await Movie.insertMany(MOVIES_DB);
-    return NextResponse.json({ message: "Movies seeded successfully" });
+    await Theater.deleteMany({});
+    await Showtime.deleteMany({});
+
+    // Seed Movies & Theaters
+    const insertedMovies = await Movie.insertMany(MOVIES_DB);
+    const insertedTheaters = await Theater.insertMany(THEATERS_DB);
+
+    // Generate Showtimes for the next 7 days
+    const showtimesToInsert = [];
+    const statuses = ["available", "filling", "almost-full"];
+    const types = ["Cancellation available", "2K LASER", "ATMOS"];
+    const baseTimes = [
+      { time: "09:25 AM", isLate: false },
+      { time: "12:15 PM", isLate: false },
+      { time: "04:30 PM", isLate: false },
+      { time: "08:15 PM", isLate: false },
+      { time: "11:30 PM", isLate: true },
+    ];
+
+    for (let i = 0; i < 7; i++) {
+      const d = new Date();
+      d.setDate(d.getDate() + i);
+      const dateStr = d.toISOString().split('T')[0];
+
+      for (const movie of insertedMovies) {
+        for (const format of movie.formats) {
+          for (const language of movie.languages) {
+            for (const theater of insertedTheaters) {
+              
+              // Add a subset of base times to each theater randomly to add variation
+              const numShows = Math.floor(Math.random() * 3) + 2; // 2 to 4 shows
+              for (let j = 0; j < numShows; j++) {
+                showtimesToInsert.push({
+                  movie: movie._id,
+                  theater: theater._id,
+                  date: dateStr,
+                  time: baseTimes[j].time,
+                  isLate: baseTimes[j].isLate,
+                  format: format,
+                  language: language,
+                  type: types[Math.floor(Math.random() * types.length)],
+                  status: statuses[Math.floor(Math.random() * statuses.length)],
+                });
+              }
+
+            }
+          }
+        }
+      }
+    }
+
+    await Showtime.insertMany(showtimesToInsert);
+
+    return NextResponse.json({ message: "Movies, Theaters, and Showtimes seeded successfully" });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

@@ -1,55 +1,34 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
-import { jwtVerify } from 'jose'
+import { withAuth } from "next-auth/middleware"
+import { NextResponse } from "next/server"
 
-const JWT_SECRET = new TextEncoder().encode(process.env.NEXTAUTH_SECRET || "fallback_secret_key");
+export default withAuth(
+  function middleware(req) {
+    const token = req.nextauth.token
+    const path = req.nextUrl.pathname
 
-// Define routes and required roles
-const protectedRoutes = {
-  '/profile': ['Customer', 'Organiser', 'Admin'],
-  '/admin': ['Admin'],
-  '/organiser': ['Organiser', 'Admin']
-};
-
-export async function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname;
-  
-  // Find if current path matches any protected route prefix
-  const protectedRoute = Object.entries(protectedRoutes).find(([route]) => path.startsWith(route));
-  
-  if (protectedRoute) {
-    const [route, allowedRoles] = protectedRoute;
-    
-    // Check for access token cookie
-    const token = request.cookies.get('access_token')?.value;
-    
     if (!token) {
-      // Not authenticated
-      return NextResponse.redirect(new URL('/login?error=Authentication+required', request.url));
+      return NextResponse.redirect(new URL('/login?error=Authentication+required', req.url))
     }
-    
-    try {
-      // Verify JWT using jose (since standard jsonwebtoken library uses Node APIs not available in edge runtime)
-      const { payload } = await jwtVerify(token, JWT_SECRET);
-      
-      const userRole = payload.role as string;
-      
-      if (!allowedRoles.includes(userRole)) {
-        // Authenticated but unauthorized role
-        return NextResponse.redirect(new URL('/?error=Unauthorized+access', request.url));
-      }
-      
-      return NextResponse.next();
-    } catch (error) {
-      // Token is invalid or expired
-      return NextResponse.redirect(new URL('/login?error=Session+expired', request.url));
-    }
-  }
-  
-  return NextResponse.next();
-}
 
-// Configure which paths the middleware runs on
+    const userRole = token.role as string
+
+    if (path.startsWith('/admin') && userRole !== 'Admin') {
+      return NextResponse.redirect(new URL('/?error=Unauthorized', req.url))
+    }
+
+    if (path.startsWith('/organiser') && !['Organiser', 'Admin'].includes(userRole)) {
+      return NextResponse.redirect(new URL('/?error=Unauthorized', req.url))
+    }
+
+    return NextResponse.next()
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token
+    },
+  }
+)
+
 export const config = {
   matcher: [
     '/profile/:path*',

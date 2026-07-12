@@ -1,9 +1,8 @@
 import Image from "next/image";
 import Link from "next/link";
-import { Star, ChevronRight, Share2, Play } from "lucide-react";
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
+import { Share2, Play, Heart, Star } from "lucide-react";
 import BookTicketsButton from "@/components/BookTicketsButton";
+import { CastSection, CrewSection } from "@/components/CastCrewCards";
 
 import { Movie } from "@/models/Movie";
 import connectDB from "@/lib/db";
@@ -12,11 +11,10 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ i
   const resolvedParams = await params;
   await connectDB();
   
-  let MOVIE;
+  let MOVIE: any;
   try {
     MOVIE = await Movie.findById(resolvedParams.id).lean();
-  } catch (error) {
-    // Catch invalid ObjectId errors
+  } catch {
     MOVIE = null;
   }
 
@@ -29,146 +27,176 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ i
     );
   }
 
+  const formats = (MOVIE.formats || []).filter(Boolean);
+  const languages = (MOVIE.languages || []).filter(Boolean);
+  // Filter out certification-looking strings from genres
+  const genres = (MOVIE.genres || []).filter(
+    (g: string) => g && g.length > 1 && !g.match(/^(UA|U|A)\d*[+]?$/)
+  );
+
+  // Serialize for client components
+  const cast = JSON.parse(JSON.stringify(MOVIE.cast || []));
+  const crew = JSON.parse(JSON.stringify(MOVIE.crew || []));
+
   return (
     <div className="min-h-screen bg-white">
-      <Navbar />
-
-      {/* Hero Section */}
-      <div 
-        className="relative w-full h-[480px] bg-cover bg-center flex items-center"
-        style={{
-          backgroundImage: `linear-gradient(90deg, #1A1A1A 24.97%, #1A1A1A 38.3%, rgba(26, 26, 26, 0.04) 97.47%, #1A1A1A 100%), url(${MOVIE.poster})`
-        }}
+      
+      {/* ── HERO SECTION (matches BMS gradient style) ── */}
+      <section
+        className="relative w-full bg-[#1a1a1a] overflow-hidden"
+        style={{ minHeight: 480 }}
       >
-        <div className="max-w-7xl mx-auto px-4 lg:px-8 w-full flex gap-8 z-10">
-          {/* Poster Container */}
-          <div className="relative w-[260px] shrink-0">
-            <div className="rounded-xl overflow-hidden shadow-xl border border-gray-700/50 relative group cursor-pointer">
-              <Image 
+        {/* Faint background poster */}
+        <div
+          className="absolute inset-0 bg-cover bg-top opacity-30"
+          style={{ backgroundImage: `url(${MOVIE.poster})` }}
+        />
+        {/* BMS gradient overlay */}
+        <div
+          className="absolute inset-0"
+          style={{
+            background:
+              "linear-gradient(90deg, #1A1A1A 24.97%, #1A1A1A 38.3%, rgba(26,26,26,0.04) 97.47%, #1A1A1A 100%)",
+          }}
+        />
+
+        <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 py-10 flex items-start gap-8">
+          {/* ── Poster ── */}
+          <div className="shrink-0 w-[220px] group">
+            <div
+              className="relative overflow-hidden shadow-2xl cursor-pointer"
+              style={{ borderRadius: "16px 16px 0 0" }}
+            >
+              <Image
                 src={MOVIE.poster}
                 alt={MOVIE.title}
-                width={260}
-                height={390}
-                className="w-full h-auto object-cover"
+                width={220}
+                height={330}
+                className="w-full object-cover"
+                style={{ height: 330, display: "block" }}
                 unoptimized
+                priority
               />
-              <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="w-12 h-12 rounded-full bg-black/60 flex items-center justify-center backdrop-blur-sm border border-white/30">
-                  <Play className="w-5 h-5 text-white ml-1" fill="currentColor" />
+              {/* Trailer hover */}
+              <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <div className="w-14 h-14 rounded-full bg-black/60 flex items-center justify-center border border-white/30">
+                  <Play className="w-6 h-6 text-white ml-1" fill="currentColor" />
                 </div>
-                <span className="text-white font-medium text-sm mt-2">Trailer</span>
+                <span className="text-white text-sm font-medium mt-2">Trailers</span>
               </div>
+              {/* Release badge */}
+              {MOVIE.releaseDate && (
+                <div className="absolute bottom-0 left-0 right-0 bg-[#f84464]/90 text-white text-xs font-semibold text-center py-1.5">
+                  {String(MOVIE.releaseDate).toLowerCase().startsWith("releasing")
+                    ? MOVIE.releaseDate
+                    : `In cinemas: ${MOVIE.releaseDate}`}
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Details Container */}
-          <div className="flex flex-col justify-center py-4 text-white flex-1">
-            <h1 className="text-[36px] font-bold tracking-tight mb-4">{MOVIE.title}</h1>
-            
-            {/* Rating Box */}
-            <div className="flex items-center gap-4 bg-[#333333]/80 backdrop-blur-md rounded-xl p-4 w-max mb-6 cursor-pointer hover:bg-[#333333] transition">
-              <div className="flex items-center gap-2">
-                <Star className="w-6 h-6 text-[#f84464]" fill="currentColor" />
-                <span className="text-xl font-bold">{MOVIE.rating}/10</span>
-                <span className="text-gray-300 text-sm">{MOVIE.votes}</span>
-                <ChevronRight className="w-4 h-4 text-gray-300 ml-2" />
+          {/* ── Info ── */}
+          <div className="flex flex-col justify-center text-white flex-1 min-w-0 py-2">
+            <h1 className="text-[2.2rem] font-bold leading-tight mb-4">{MOVIE.title}</h1>
+
+            {/* Rating + Votes */}
+            {MOVIE.rating && (
+              <div className="flex items-center gap-4 mb-5">
+                <div className="flex items-center gap-2 bg-white/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-white/20 transition">
+                  <Star className="w-5 h-5 text-[#f84464]" fill="currentColor" />
+                  <span className="font-bold text-lg">{MOVIE.rating}/10</span>
+                  <span className="text-gray-400 text-sm">{MOVIE.votes}</span>
+                </div>
+                <div className="flex items-center gap-2 bg-white/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-white/20 transition">
+                  <Heart className="w-5 h-5 text-[#f84464]" />
+                  <span className="text-sm text-gray-300">I'm Interested</span>
+                </div>
               </div>
+            )}
+
+            {/* Duration • Genres • Certification */}
+            <div className="text-gray-300 text-sm mb-4 flex flex-wrap items-center gap-x-2 gap-y-1">
+              {MOVIE.duration && <span>{MOVIE.duration}</span>}
+              {genres.length > 0 && (
+                <>
+                  <span className="text-gray-600">•</span>
+                  <span>{genres.join(", ")}</span>
+                </>
+              )}
+              {MOVIE.certification && (
+                <>
+                  <span className="text-gray-600">•</span>
+                  <span className="border border-gray-500 text-gray-300 text-xs px-1.5 py-0.5 rounded">
+                    {MOVIE.certification}
+                  </span>
+                </>
+              )}
             </div>
 
-            {/* Badges */}
-            <div className="flex items-center gap-3 mb-4">
-              <div className="bg-white/90 text-black px-3 py-1 text-sm font-semibold rounded-sm cursor-pointer hover:underline">
-                {MOVIE.formats.join(", ")}
+            {/* Format & Language tags */}
+            {(formats.length > 0 || languages.length > 0) && (
+              <div className="flex flex-wrap gap-2 mb-6">
+                {formats.map((f: string) => (
+                  <span
+                    key={f}
+                    className="border border-white/50 text-white text-xs px-3 py-1 rounded-full hover:bg-white/10 cursor-pointer transition"
+                  >
+                    {f}
+                  </span>
+                ))}
+                {languages.map((l: string) => (
+                  <span
+                    key={l}
+                    className="border border-white/30 text-gray-300 text-xs px-3 py-1 rounded-full hover:bg-white/10 cursor-pointer transition"
+                  >
+                    {l}
+                  </span>
+                ))}
               </div>
-              <div className="bg-white/90 text-black px-3 py-1 text-sm font-semibold rounded-sm cursor-pointer hover:underline">
-                {MOVIE.languages.join(", ")}
-              </div>
-            </div>
+            )}
 
-            {/* Meta info */}
-            <div className="text-gray-300 text-base mb-8">
-              <span>{MOVIE.duration}</span>
-              <span className="mx-2">•</span>
-              <span>{MOVIE.genres.join(", ")}</span>
-              <span className="mx-2">•</span>
-              <span>{MOVIE.certification}</span>
-              <span className="mx-2">•</span>
-              <span>{MOVIE.releaseDate}</span>
+            {/* Book Tickets */}
+            <div>
+              <BookTicketsButton
+                movieId={MOVIE._id.toString()}
+                movieTitle={MOVIE.title}
+                certification={MOVIE.certification}
+                formats={formats}
+                languages={languages}
+              />
             </div>
-
-            {/* Book Button */}
-            <BookTicketsButton 
-              movieId={MOVIE._id.toString()}
-              movieTitle={MOVIE.title}
-              certification={MOVIE.certification}
-              formats={MOVIE.formats}
-              languages={MOVIE.languages}
-            />
           </div>
-          
-          {/* Share Button Top Right */}
-          <div className="absolute top-8 right-8">
-            <button className="flex items-center justify-center w-10 h-10 rounded-full bg-black/40 hover:bg-black/60 backdrop-blur-md transition border border-white/20">
-              <Share2 className="w-5 h-5 text-white" />
+
+          {/* Share */}
+          <div className="self-start pt-2">
+            <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition">
+              <Share2 className="w-6 h-6" />
+              <span className="text-xs">Share</span>
             </button>
           </div>
         </div>
+      </section>
+
+      {/* ── CONTENT BELOW HERO ── */}
+      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-8 flex flex-col gap-8">
+
+        {/* About */}
+        {MOVIE.about && (
+          <section>
+            <h2 className="text-xl font-bold text-gray-900 mb-3">About the movie</h2>
+            <p className="text-gray-700 leading-relaxed text-sm max-w-3xl">{MOVIE.about}</p>
+          </section>
+        )}
+
+        {(cast.length > 0 || crew.length > 0) && <hr className="border-gray-100" />}
+
+        {/* Cast — client component handles img errors */}
+        <CastSection cast={cast} />
+
+        {/* Crew — client component handles img errors */}
+        <CrewSection crew={crew} />
+
       </div>
-
-      {/* Main Content Area */}
-      <div className="max-w-7xl mx-auto px-4 lg:px-8 py-10 w-full flex flex-col gap-10">
-        
-        {/* About Section */}
-        <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">About the movie</h2>
-          <p className="text-gray-700 leading-relaxed text-base">
-            {MOVIE.about}
-          </p>
-        </section>
-
-
-
-        {/* Cast Section */}
-        <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Cast</h2>
-          <div className="flex overflow-x-auto gap-8 pb-4 snap-x snap-mandatory hide-scrollbar">
-            {MOVIE.cast.map((actor, idx) => (
-              <div key={idx} className="flex flex-col items-center shrink-0 w-28 snap-start cursor-pointer group">
-                <div className="w-24 h-24 rounded-full overflow-hidden mb-3 border border-gray-200 group-hover:shadow-md transition">
-                  <Image 
-                    src={actor.image}
-                    alt={actor.name}
-                    width={96}
-                    height={96}
-                    className="w-full h-full object-cover"
-                    unoptimized
-                  />
-                </div>
-                <h3 className="text-sm font-semibold text-gray-900 text-center leading-tight mb-1">{actor.name}</h3>
-                <p className="text-xs text-gray-500 text-center">{actor.role}</p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        <hr className="border-gray-200" />
-        
-        {/* Crew Section */}
-        <section>
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">Crew</h2>
-          <div className="flex overflow-x-auto gap-8 pb-4 snap-x snap-mandatory hide-scrollbar">
-             <div className="flex flex-col items-center shrink-0 w-28 snap-start cursor-pointer group">
-                <div className="w-24 h-24 rounded-full overflow-hidden mb-3 border border-gray-200 bg-gray-100 flex items-center justify-center group-hover:shadow-md transition">
-                   <span className="text-gray-400 font-bold text-xl">IK</span>
-                </div>
-                <h3 className="text-sm font-semibold text-gray-900 text-center leading-tight mb-1">Indra Kumar</h3>
-                <p className="text-xs text-gray-500 text-center">Director</p>
-              </div>
-          </div>
-        </section>
-      </div>
-
-      <Footer />
     </div>
   );
 }

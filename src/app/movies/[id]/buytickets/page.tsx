@@ -1,9 +1,6 @@
 import { notFound } from "next/navigation";
 import { Movie } from "@/models/Movie";
 import connectDB from "@/lib/db";
-import Navbar from "@/components/Navbar";
-import SubNavbar from "@/components/SubNavbar";
-import Footer from "@/components/Footer";
 import ShowtimesContainer from "@/components/buytickets/ShowtimesContainer";
 
 export default async function BuyTicketsPage({ params, searchParams }: { params: Promise<{ id: string }>, searchParams: Promise<{ [key: string]: string | string[] | undefined }> }) {
@@ -28,9 +25,7 @@ export default async function BuyTicketsPage({ params, searchParams }: { params:
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col">
-      <Navbar />
-      <SubNavbar />
-      
+                  
       {/* Top Info Bar */}
       <div className="bg-[#333333] text-white pt-6 pb-6">
         <div className="max-w-7xl mx-auto px-4 lg:px-8">
@@ -54,7 +49,6 @@ export default async function BuyTicketsPage({ params, searchParams }: { params:
       
       <ShowtimesContainer />
 
-      <Footer />
-    </div>
+          </div>
   );
 }

@@ -6,13 +6,8 @@ export default function SubNavbar() {
       <div className="max-w-7xl mx-auto px-4 lg:px-8 flex items-center justify-between h-10">
         {/* Left Links */}
         <div className="flex items-center gap-6">
-          <Link href="/" className="hover:text-gray-900 transition">Movies</Link>
-          <Link href="/" className="hover:text-gray-900 transition">Stream</Link>
-          <Link href="/" className="hover:text-gray-900 transition">Events</Link>
-          <Link href="/" className="hover:text-gray-900 transition">Plays</Link>
-          <Link href="/" className="hover:text-gray-900 transition">Sports</Link>
-          <Link href="/" className="hover:text-gray-900 transition">Activities</Link>
-          <Link href="/" className="hover:text-gray-900 transition">Buzz</Link>
+          <Link href="/movies" className="hover:text-gray-900 transition">Movies</Link>
+          <Link href="/events" className="hover:text-gray-900 transition">Events</Link>
         </div>
 
         {/* Right Links */}

@@ -1,16 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
 import connectToDatabase from "@/lib/db";
 import { User } from "@/models/User";
-import { verifyToken } from "@/lib/jwt";
-import { cookies } from "next/headers";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 import bcrypt from "bcryptjs";
 
 // Helper to authenticate request
 async function getAuthUser() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value;
-  if (!token) return null;
-  return verifyToken(token);
+  const session = await getServerSession(authOptions);
+  return session?.user || null;
 }
 
 export async function GET(req: NextRequest) {

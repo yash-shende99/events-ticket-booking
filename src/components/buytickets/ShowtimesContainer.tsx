@@ -1,63 +1,20 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Info, Search, Heart, MapPin, Smartphone } from "lucide-react";
-
-const THEATERS = [
-  {
-    name: "Cinepolis: Nexus Seawoods, Nerul, Navi Mumbai",
-    amenities: ["M-Ticket", "Food & Beverage"],
-    shows: [
-      { time: "09:25 PM", type: "Cancellation available", status: "available" },
-      { time: "10:25 PM", type: "Cancellation available", status: "available" },
-      { time: "11:15 PM", type: "Cancellation available", status: "filling", isLate: true },
-      { time: "11:50 PM", type: "Cancellation available", status: "available", isLate: true }
-    ]
-  },
-  {
-    name: "Cinepolis: Lake Shore, Thane (EX Viviana Mall)",
-    amenities: ["M-Ticket"],
-    shows: [
-      { time: "08:30 PM", type: "2K LASER DOLBY 7.1", status: "available" },
-      { time: "09:40 PM", type: "2K LASER DOLBY 7.1", status: "available" },
-      { time: "10:40 PM", type: "ATMOS", status: "available" },
-      { time: "11:10 PM", type: "2K LASER DOLBY 7.1", status: "almost-full", isLate: true }
-    ]
-  },
-  {
-    name: "BMX Cinemas(BalajiMovieplex): Littleworld Kharghar",
-    amenities: ["M-Ticket", "Food & Beverage"],
-    shows: [
-      { time: "08:30 PM", type: "ATMOS", status: "available" },
-      { time: "10:30 PM", type: "Cancellation available", status: "available" },
-      { time: "11:30 PM", type: "Cancellation available", status: "available", isLate: true }
-    ]
-  },
-  {
-    name: "INOX Megaplex: Sky City Mall, Borivali",
-    amenities: ["M-Ticket", "Food & Beverage", "Recliner"],
-    shows: [
-      { time: "08:10 PM", type: "Cancellation available", status: "available" },
-      { time: "09:15 PM", type: "INSIGNIA", status: "available" },
-      { time: "10:15 PM", type: "Cancellation available", status: "available" },
-      { time: "11:15 PM", type: "Cancellation available", status: "available", isLate: true }
-    ]
-  },
-  {
-    name: "INOX: R-City, Ghatkopar",
-    amenities: ["M-Ticket", "Food & Beverage", "Recliner"],
-    shows: [
-      { time: "07:40 PM", type: "KOTAK INSIGNIA", status: "available" },
-      { time: "08:40 PM", type: "ENG", status: "available" },
-      { time: "09:45 PM", type: "LASER", status: "available" },
-      { time: "10:45 PM", type: "KOTAK INSIGNIA", status: "available" },
-      { time: "11:45 PM", type: "LASER", status: "almost-full", isLate: true }
-    ]
-  }
-];
+import SeatSelectionModal from "./SeatSelectionModal";
+import { useRouter, useParams, useSearchParams } from "next/navigation";
 
 export default function ShowtimesContainer() {
   const [selectedIdx, setSelectedIdx] = useState(0);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedShowtime, setSelectedShowtime] = useState<any>(null);
+  const [displayedTheaters, setDisplayedTheaters] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  
+  const router = useRouter();
+  const params = useParams();
+  const searchParams = useSearchParams();
 
   // Generate 7 days starting from today
   const dates = Array.from({ length: 7 }).map((_, i) => {
@@ -69,16 +26,57 @@ export default function ShowtimesContainer() {
     return {
       day: dayNames[d.getDay()],
       date: d.getDate().toString().padStart(2, '0'),
+      dateStr: d.toISOString().split('T')[0],
       month: monthNames[d.getMonth()]
     };
   });
 
-  // To simulate different dates having different data, we shuffle or slice the theaters array
-  const displayedTheaters = [...THEATERS];
-  // Shift array slightly based on date index to look dynamic
-  for (let i = 0; i < selectedIdx; i++) {
-    displayedTheaters.push(displayedTheaters.shift()!);
-  }
+  useEffect(() => {
+    async function fetchShowtimes() {
+      setIsLoading(true);
+      try {
+        const selectedDateStr = dates[selectedIdx].dateStr;
+        const format = searchParams.get("format") || "2D";
+        const language = searchParams.get("lang") || "Hindi";
+
+        const res = await fetch(`/api/movies/${params.id}/showtimes?date=${selectedDateStr}&format=${encodeURIComponent(format)}&language=${encodeURIComponent(language)}`);
+        if (res.ok) {
+          const showtimes = await res.json();
+          
+          // Group by theater
+          const grouped = showtimes.reduce((acc: any, st: any) => {
+            if (!st.theater) return acc; // safety check
+            const theaterId = st.theater._id;
+            if (!acc[theaterId]) {
+              acc[theaterId] = {
+                name: st.theater.name,
+                amenities: st.theater.amenities || [],
+                shows: []
+              };
+            }
+            acc[theaterId].shows.push({
+              _id: st._id,
+              time: st.time,
+              type: st.type,
+              status: st.status,
+              isLate: st.isLate
+            });
+            return acc;
+          }, {});
+
+          setDisplayedTheaters(Object.values(grouped));
+        }
+      } catch (err) {
+        console.error("Failed to fetch showtimes", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+
+    if (params.id) {
+      fetchShowtimes();
+    }
+  }, [params.id, selectedIdx, searchParams]);
 
   return (
     <div className="flex-1 flex flex-col">
@@ -147,74 +145,102 @@ export default function ShowtimesContainer() {
               <span className="flex items-center gap-2.5"><div className="w-2 h-2 rounded-full bg-[#f84464] shadow-[0_0_6px_rgba(248,68,100,0.4)]"></div> Almost Full</span>
             </div>
 
-            {/* List */}
-            <div>
-              {displayedTheaters.map((theater, idx) => (
-                <div key={idx} className="border-b border-gray-100 last:border-0 p-8 flex flex-col md:flex-row gap-8 bg-white hover:bg-[#fafafa] transition duration-300">
-                  <div className="md:w-[35%]">
-                    <div className="flex items-start gap-4">
-                      <Heart className="w-5 h-5 text-gray-300 hover:text-[#f84464] hover:fill-[#f84464]/10 cursor-pointer flex-shrink-0 mt-0.5 transition" />
-                      <div>
-                        <h3 className="font-semibold text-gray-900 text-[14px] flex items-center gap-2 hover:text-[#f84464] transition cursor-pointer leading-snug">
-                          {theater.name}
-                          <Info className="w-3.5 h-3.5 text-gray-300" />
-                        </h3>
-                        <div className="mt-3.5 flex flex-wrap gap-5 text-[11px]">
-                          {theater.amenities.includes("M-Ticket") && (
-                            <span className="flex items-center gap-1.5 text-[#4abd5d] font-medium">
-                              <Smartphone className="w-3.5 h-3.5" /> M-Ticket
-                            </span>
-                          )}
-                          {theater.amenities.includes("Food & Beverage") && (
-                            <span className="flex items-center gap-1.5 text-[#ff9900] font-medium">
-                              F&B
-                            </span>
-                          )}
+            {isLoading ? (
+              <div className="p-12 flex flex-col items-center justify-center space-y-4">
+                <div className="w-12 h-12 border-4 border-[#f84464] border-t-transparent rounded-full animate-spin"></div>
+                <p className="text-gray-500 font-medium">Loading Showtimes...</p>
+              </div>
+            ) : displayedTheaters.length === 0 ? (
+              <div className="p-16 flex flex-col items-center justify-center text-center">
+                <h3 className="text-xl font-bold text-gray-800 mb-2">No Showtimes Available</h3>
+                <p className="text-gray-500 text-sm max-w-sm">We couldn't find any showtimes for this date matching your selected format and language.</p>
+              </div>
+            ) : (
+              <div>
+                {displayedTheaters.map((theater, idx) => (
+                  <div key={idx} className="border-b border-gray-100 last:border-0 p-8 flex flex-col md:flex-row gap-8 bg-white hover:bg-[#fafafa] transition duration-300">
+                    <div className="md:w-[35%]">
+                      <div className="flex items-start gap-4">
+                        <Heart className="w-5 h-5 text-gray-300 hover:text-[#f84464] hover:fill-[#f84464]/10 cursor-pointer flex-shrink-0 mt-0.5 transition" />
+                        <div>
+                          <h3 className="font-semibold text-gray-900 text-[14px] flex items-center gap-2 hover:text-[#f84464] transition cursor-pointer leading-snug">
+                            {theater.name}
+                            <Info className="w-3.5 h-3.5 text-gray-300" />
+                          </h3>
+                          <div className="mt-3.5 flex flex-wrap gap-5 text-[11px]">
+                            {theater.amenities.includes("M-Ticket") && (
+                              <span className="flex items-center gap-1.5 text-[#4abd5d] font-medium">
+                                <Smartphone className="w-3.5 h-3.5" /> M-Ticket
+                              </span>
+                            )}
+                            {theater.amenities.includes("Food & Beverage") && (
+                              <span className="flex items-center gap-1.5 text-[#ff9900] font-medium">
+                                F&B
+                              </span>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                  
-                  <div className="md:w-[65%] flex flex-wrap gap-4 items-center">
-                    {theater.shows.map((show, sIdx) => {
-                      // Modern aesthetic variables
-                      let textColor = "text-[#4abd5d]";
-                      let borderColor = "border-gray-200 hover:border-[#4abd5d]";
-                      let hoverBg = "hover:bg-[#4abd5d]/5";
-                      
-                      if (show.status === "filling") {
-                        textColor = "text-[#ff9900]";
-                        borderColor = "border-[#ff9900]/40 hover:border-[#ff9900]";
-                        hoverBg = "hover:bg-[#ff9900]/5";
-                      }
-                      if (show.status === "almost-full") {
-                        textColor = "text-[#f84464]";
-                        borderColor = "border-[#f84464]/40 hover:border-[#f84464]";
-                        hoverBg = "hover:bg-[#f84464]/5";
-                      }
+                    
+                    <div className="md:w-[65%] flex flex-wrap gap-4 items-center">
+                      {theater.shows.map((show: any, sIdx: number) => {
+                        let textColor = "text-[#4abd5d]";
+                        let borderColor = "border-gray-200 hover:border-[#4abd5d]";
+                        let hoverBg = "hover:bg-[#4abd5d]/5";
+                        
+                        if (show.status === "filling") {
+                          textColor = "text-[#ff9900]";
+                          borderColor = "border-[#ff9900]/40 hover:border-[#ff9900]";
+                          hoverBg = "hover:bg-[#ff9900]/5";
+                        }
+                        if (show.status === "almost-full") {
+                          textColor = "text-[#f84464]";
+                          borderColor = "border-[#f84464]/40 hover:border-[#f84464]";
+                          hoverBg = "hover:bg-[#f84464]/5";
+                        }
 
-                      return (
-                        <div key={sIdx} className="relative group cursor-pointer">
-                          {show.isLate && (
-                            <div className="absolute -top-2 -right-2 bg-gray-400 rounded-full w-[16px] h-[16px] flex items-center justify-center text-white text-[9px] z-10 shadow-sm transition group-hover:bg-gray-600">
-                              ☾
+                        return (
+                          <div 
+                            key={sIdx} 
+                            className="relative group cursor-pointer"
+                            onClick={() => {
+                              setSelectedShowtime(show);
+                              setIsModalOpen(true);
+                            }}
+                          >
+                            {show.isLate && (
+                              <div className="absolute -top-2 -right-2 bg-gray-400 rounded-full w-[16px] h-[16px] flex items-center justify-center text-white text-[9px] z-10 shadow-sm transition group-hover:bg-gray-600">
+                                ☾
+                              </div>
+                            )}
+                            <div className={`px-4 py-2.5 rounded-lg border ${borderColor} ${hoverBg} bg-white flex flex-col items-center justify-center min-w-[100px] transition-all duration-300 ease-out group-hover:shadow-sm group-hover:-translate-y-[1px]`}>
+                              <span className={`text-[13px] font-semibold ${textColor} tracking-tight`}>{show.time}</span>
+                              <span className="text-[8.5px] font-medium text-gray-400 mt-1 uppercase text-center leading-tight max-w-[85px] tracking-widest">{show.type}</span>
                             </div>
-                          )}
-                          <div className={`px-4 py-2.5 rounded-lg border ${borderColor} ${hoverBg} bg-white flex flex-col items-center justify-center min-w-[100px] transition-all duration-300 ease-out group-hover:shadow-sm group-hover:-translate-y-[1px]`}>
-                            <span className={`text-[13px] font-semibold ${textColor} tracking-tight`}>{show.time}</span>
-                            <span className="text-[8.5px] font-medium text-gray-400 mt-1 uppercase text-center leading-tight max-w-[85px] tracking-widest">{show.type}</span>
                           </div>
-                        </div>
-                      );
-                    })}
+                        );
+                      })}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
             
           </div>
         </div>
       </div>
+      
+      <SeatSelectionModal 
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onSelectSeats={(count) => {
+          setIsModalOpen(false);
+          if (selectedShowtime) {
+            router.push(`/movies/${params.id}/seat-layout/${selectedShowtime._id}?seats=${count}&time=${encodeURIComponent(selectedShowtime.time)}`);
+          }
+        }}
+      />
     </div>
   );
 }

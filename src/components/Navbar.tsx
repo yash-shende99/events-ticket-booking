@@ -1,12 +1,12 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Search, Menu, ChevronDown, UserCircle } from "lucide-react";
-import { cookies } from "next/headers";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
 export default async function Navbar() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("access_token")?.value;
-  const isAuthenticated = !!token;
+  const session = await getServerSession(authOptions);
+  const isAuthenticated = !!session;
   return (
     <nav className="w-full bg-white text-gray-900 border-b border-gray-200">
       <div className="max-w-7xl mx-auto px-4 lg:px-8 flex items-center justify-between h-[68px]">

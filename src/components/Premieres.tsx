@@ -38,13 +38,12 @@ export default function Premieres() {
   return (
     <div className="w-full bg-[#2b3149] py-12 mt-8">
       <div className="max-w-7xl mx-auto px-4 lg:px-8">
-        <div className="w-full mb-8 rounded-lg overflow-hidden cursor-pointer">
+        <div className="w-full h-[100px] relative mb-8 rounded-lg overflow-hidden cursor-pointer">
            <Image 
              src="/bookmyshow home page_files/premiere-banner-web-collection-202208191200.png"
              alt="Premieres Banner"
-             width={1280}
-             height={100}
-             className="w-full h-auto"
+             fill
+             className="object-cover"
              unoptimized
            />
         </div>
@@ -55,14 +54,12 @@ export default function Premieres() {
         <div className="flex overflow-x-auto gap-8 pb-4 snap-x snap-mandatory hide-scrollbar">
           {PREMIERES.map((movie) => (
             <Link key={movie.id} href={`/movies/${movie.id}`} className="group shrink-0 w-[220px] snap-start flex flex-col gap-3 cursor-pointer">
-              <div className="w-full rounded-lg overflow-hidden shadow-md">
+              <div className="w-full h-[330px] relative rounded-lg overflow-hidden shadow-md bg-gray-200">
                 <Image 
                   src={movie.image} 
                   alt={movie.title} 
-                  width={220}
-                  height={330}
-                  className="w-full h-auto object-contain group-hover:scale-105 transition duration-300"
-                  style={{ width: '100%', height: 'auto' }}
+                  fill
+                  className="object-cover group-hover:scale-105 transition duration-300"
                   unoptimized
                 />
               </div>
