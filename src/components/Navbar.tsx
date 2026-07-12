@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Search, Menu, ChevronDown, UserCircle } from "lucide-react";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import UserMenuClient from "./UserMenuClient";
 
 export default async function Navbar() {
   const session = await getServerSession(authOptions);
@@ -31,27 +32,14 @@ export default async function Navbar() {
           </div>
         </div>
 
-        {/* Right Side: Location & Sign In */}
+        {/* Right Side: Location & Menu */}
         <div className="flex items-center gap-6">
           <div className="hidden md:flex items-center gap-1 cursor-pointer text-sm hover:text-gray-600 transition">
             Mumbai
             <ChevronDown className="w-4 h-4" />
           </div>
           
-          {isAuthenticated ? (
-            <Link href="/profile" className="flex items-center gap-2 text-gray-700 hover:text-gray-900 transition">
-              <UserCircle className="w-6 h-6" />
-              <span className="text-sm font-medium hidden sm:inline-block">Profile</span>
-            </Link>
-          ) : (
-            <Link href="/login">
-              <button className="bg-[#f84464] hover:bg-[#d83552] text-white text-xs font-semibold px-4 py-1.5 rounded transition">
-                Sign in
-              </button>
-            </Link>
-          )}
-          
-          <Menu className="w-6 h-6 cursor-pointer hover:text-gray-600 transition" />
+          <UserMenuClient isAuthenticated={isAuthenticated} userName={session?.user?.name} />
         </div>
       </div>
     </nav>
