@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Share2, Play, Heart, Star } from "lucide-react";
 import BookTicketsButton from "@/components/BookTicketsButton";
 import { CastSection, CrewSection } from "@/components/CastCrewCards";
+import MovieActionsClient from "@/components/movies/MovieActionsClient";
 
 import { Movie } from "@/models/Movie";
 import connectDB from "@/lib/db";
@@ -167,13 +168,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ i
             </div>
           </div>
 
-          {/* Share */}
-          <div className="self-start pt-2">
-            <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition">
-              <Share2 className="w-6 h-6" />
-              <span className="text-xs">Share</span>
-            </button>
-          </div>
+          <MovieActionsClient movieId={MOVIE._id.toString()} />
         </div>
       </section>
 

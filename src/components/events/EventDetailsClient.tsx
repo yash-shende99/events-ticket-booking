@@ -3,10 +3,36 @@
 import React, { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { Share2, Calendar, Clock, MapPin, IndianRupee, Info } from "lucide-react";
+import { Share2, Calendar, Clock, MapPin, IndianRupee, Info, Heart } from "lucide-react";
 
 export default function EventDetailsClient({ event }: { event: any }) {
   const [isBooking, setIsBooking] = useState(false);
+  const [isWishlisted, setIsWishlisted] = useState(false);
+
+  React.useEffect(() => {
+    fetch('/api/wishlist').then(res => res.json()).then(data => {
+      if (data.events?.includes(event._id)) setIsWishlisted(true);
+    }).catch(console.error);
+  }, [event._id]);
+
+  const toggleWishlist = async () => {
+    const previousState = isWishlisted;
+    setIsWishlisted(!isWishlisted);
+    try {
+      const res = await fetch('/api/wishlist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId: event._id, type: 'EVENT' })
+      });
+      if (res.status === 401) {
+        setIsWishlisted(false);
+        alert("Please sign in to add to your wishlist!");
+      }
+    } catch(e) {
+      console.error(e);
+      setIsWishlisted(previousState);
+    }
+  };
 
   // Parse languages or default
   const languages = Array.isArray(event.languages) ? event.languages : [event.languages || "Marathi"];
@@ -92,13 +118,19 @@ export default function EventDetailsClient({ event }: { event: any }) {
             </div>
           </div>
 
-          {/* Share */}
-          <div className="self-start pt-2 hidden md:block">
+          {/* Actions: Share & Wishlist */}
+          <div className="self-start pt-2 hidden md:flex flex-col gap-6">
             <button className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition">
               <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/20">
                 <Share2 className="w-5 h-5" />
               </div>
               <span className="text-xs font-medium mt-1">Share</span>
+            </button>
+            <button onClick={toggleWishlist} className={`flex flex-col items-center gap-1 transition ${isWishlisted ? 'text-[#f84464]' : 'text-white/70 hover:text-white'}`}>
+              <div className="w-12 h-12 rounded-full bg-white/10 flex items-center justify-center backdrop-blur-sm border border-white/20">
+                <Heart className={`w-5 h-5 ${isWishlisted ? 'fill-current' : ''}`} />
+              </div>
+              <span className="text-xs font-medium mt-1">Wishlist</span>
             </button>
           </div>
         </div>

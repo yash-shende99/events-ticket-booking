@@ -1,6 +1,6 @@
 import HeroCarousel from "@/components/HeroCarousel";
 import RecommendedMovies from "@/components/RecommendedMovies";
-import BestOfLiveEvents from "@/components/BestOfLiveEvents";
+import OffersAndDiscounts from "@/components/OffersAndDiscounts";
 import Premieres from "@/components/Premieres";
 import EventsNearYou from "@/components/EventsNearYou";
 import OutdoorEvents from "@/components/OutdoorEvents";
@@ -29,7 +29,7 @@ export default function Home() {
       {/* Footer Spacer */}
       <div className="h-10" />
 
-      <BestOfLiveEvents />
+      <OffersAndDiscounts />
       <Premieres />
       <EventsNearYou />
       <OutdoorEvents />

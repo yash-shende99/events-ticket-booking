@@ -11,6 +11,10 @@ export interface IUser extends Document {
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   profilePicture?: string; // base64 or URL
+  defaultLocation?: string;
+  privacySettings?: { marketing: boolean };
+  wishlistedMovies: mongoose.Types.ObjectId[];
+  wishlistedEvents: mongoose.Types.ObjectId[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -26,6 +30,12 @@ const UserSchema: Schema = new Schema(
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
     profilePicture: { type: String },
+    defaultLocation: { type: String, default: "Pune" },
+    privacySettings: { 
+      marketing: { type: Boolean, default: true }
+    },
+    wishlistedMovies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
+    wishlistedEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
   },
   {
     timestamps: true,
