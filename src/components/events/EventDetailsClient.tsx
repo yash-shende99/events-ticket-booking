@@ -83,12 +83,12 @@ export default function EventDetailsClient({ event }: { event: any }) {
 
             {/* Book Button */}
             <div>
-              <button
-                onClick={() => setIsBooking(true)}
-                className="bg-[#f84464] hover:bg-[#e63c58] text-white font-semibold text-lg px-12 py-3.5 rounded-lg transition-colors w-full md:w-auto shadow-lg"
+              <Link
+                href={`/events/${event._id}/buytickets`}
+                className="inline-block bg-[#f84464] hover:bg-[#e63c58] text-white font-semibold text-lg px-12 py-3.5 rounded-lg transition-colors w-full md:w-auto shadow-lg text-center"
               >
-                {isBooking ? "Loading Seats..." : "Book"}
-              </button>
+                Book
+              </Link>
             </div>
           </div>
 
