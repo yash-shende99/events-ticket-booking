@@ -7,6 +7,9 @@ export interface IOffer extends Document {
   bgGradient: string;
   validity: string;
   category: string;
+  code?: string;
+  discountPercentage?: number;
+  maxDiscount?: number;
   isActive: boolean;
   createdAt: Date;
   updatedAt: Date;
@@ -20,6 +23,9 @@ const OfferSchema: Schema = new Schema(
     bgGradient: { type: String, required: true },
     validity: { type: String, required: true },
     category: { type: String, required: true },
+    code: { type: String, unique: true, sparse: true },
+    discountPercentage: { type: Number },
+    maxDiscount: { type: Number },
     isActive: { type: Boolean, default: true },
   },
   {
@@ -28,4 +34,9 @@ const OfferSchema: Schema = new Schema(
 );
 
 // Prevent mongoose from compiling the model multiple times in development
-export const Offer = mongoose.models.Offer || mongoose.model<IOffer>("Offer", OfferSchema);
+// Delete the cached model to ensure schema updates take effect in Next.js hot reload
+if (mongoose.models.Offer) {
+  delete mongoose.models.Offer;
+}
+
+export const Offer = mongoose.model<IOffer>("Offer", OfferSchema);

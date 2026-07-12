@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import CouponInput from "../../buytickets/CouponInput";
 
 type TicketTier = {
   id: string;
@@ -16,6 +17,7 @@ export default function EventTicketsClient({ event }: { event: any }) {
   const [selectedTickets, setSelectedTickets] = useState<Record<string, number>>({});
   const [expandedTiers, setExpandedTiers] = useState<Record<string, boolean>>({});
   const [isProcessing, setIsProcessing] = useState(false);
+  const [discount, setDiscount] = useState(0);
   const router = useRouter();
 
   const basePrice = parseInt(String(event.price).replace(/[^0-9]/g, "")) || 499;
@@ -125,7 +127,7 @@ export default function EventTicketsClient({ event }: { event: any }) {
         };
       });
 
-      const totalAmount = ticketsArray.reduce((acc, t) => acc + (t.price || 0) * t.count, 0);
+      const totalAmount = ticketsArray.reduce((acc, t) => acc + (t.price || 0) * t.count, 0) - discount;
 
       // 1. Create order
       const orderRes = await fetch("/api/create-order", {
@@ -191,6 +193,13 @@ export default function EventTicketsClient({ event }: { event: any }) {
   };
 
   const totalSelected = Object.values(selectedTickets).reduce((a, b) => a + b, 0);
+
+  const subtotal = Object.entries(selectedTickets).reduce((total, [id, count]) => {
+    const ticket = tickets.find(t => t.id === id);
+    return total + ((ticket?.price || 0) * count);
+  }, 0);
+
+  const finalAmount = subtotal - discount;
 
   return (
     <div className="bg-[#f5f5f5] min-h-screen pb-24">
@@ -299,22 +308,39 @@ export default function EventTicketsClient({ event }: { event: any }) {
         </div>
       </div>
 
+      {/* Coupon Section */}
+      {totalSelected > 0 && (
+        <div className="max-w-4xl mx-auto px-4 mt-6">
+          <CouponInput 
+            subtotal={subtotal} 
+            onDiscountApplied={(discountAmount) => setDiscount(discountAmount)} 
+          />
+        </div>
+      )}
+
       {/* Floating Bottom Bar (appears if tickets are selected) */}
       {totalSelected > 0 && (
         <div className="fixed bottom-0 left-0 right-0 bg-white border-t shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)] p-4 z-50">
            <div className="max-w-4xl mx-auto flex items-center justify-between">
-             <div>
-               <div className="text-sm text-gray-500">Total Amount</div>
-               <div className="font-bold text-xl text-gray-900">
-                 ₹{Object.entries(selectedTickets).reduce((total, [id, count]) => {
-                   const ticket = tickets.find(t => t.id === id);
-                   return total + ((ticket?.price || 0) * count);
-                 }, 0).toLocaleString()}
+             <div className="flex gap-6 items-center">
+               <div>
+                 <div className="text-sm text-gray-500">Subtotal</div>
+                 <div className="font-bold text-lg text-gray-600">₹{subtotal.toLocaleString()}</div>
+               </div>
+               {discount > 0 && (
+                 <div>
+                   <div className="text-sm text-green-600 font-medium">Coupon</div>
+                   <div className="font-bold text-lg text-green-600">- ₹{discount.toLocaleString()}</div>
+                 </div>
+               )}
+               <div>
+                 <div className="text-sm text-gray-900 font-bold">Total Amount</div>
+                 <div className="font-bold text-xl text-gray-900">₹{finalAmount.toLocaleString()}</div>
                </div>
              </div>
              <button 
                onClick={handleProceedToPay}
-               disabled={isProcessing}
+               disabled={isProcessing || finalAmount === 0 && subtotal === 0}
                className={`bg-[#f84464] hover:bg-[#e63c58] text-white font-semibold text-lg px-8 py-3 rounded-lg transition-colors shadow-lg flex items-center justify-center min-w-[180px] ${isProcessing ? 'opacity-80 cursor-not-allowed' : ''}`}
              >
                {isProcessing ? <Loader2 className="w-5 h-5 animate-spin" /> : "Proceed to Pay"}

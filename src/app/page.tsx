@@ -1,9 +1,12 @@
 import HeroCarousel from "@/components/HeroCarousel";
 import RecommendedMovies from "@/components/RecommendedMovies";
 import OffersAndDiscounts from "@/components/OffersAndDiscounts";
-import Premieres from "@/components/Premieres";
+import LaughterTherapy from "@/components/LaughterTherapy";
 import EventsNearYou from "@/components/EventsNearYou";
-import OutdoorEvents from "@/components/OutdoorEvents";
+import TopRatedMovies from "@/components/TopRatedMovies";
+import ActionMovies from "@/components/ActionMovies";
+import LiveMusic from "@/components/LiveMusic";
+import FamilyFriendly from "@/components/FamilyFriendly";
 import Image from "next/image";
 
 export default function Home() {
@@ -30,9 +33,12 @@ export default function Home() {
       <div className="h-10" />
 
       <OffersAndDiscounts />
-      <Premieres />
+      <LaughterTherapy />
+      <ActionMovies />
+      <LiveMusic />
+      <FamilyFriendly />
       <EventsNearYou />
-      <OutdoorEvents />
+      <TopRatedMovies />
 
     </main>
   );

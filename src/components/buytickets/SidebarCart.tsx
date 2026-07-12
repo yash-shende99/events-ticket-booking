@@ -2,17 +2,22 @@
 
 import Image from "next/image";
 import { Loader2 } from "lucide-react";
+import { useState } from "react";
+import CouponInput from "./CouponInput";
 
 interface SidebarCartProps {
   ticketTotal: number;
   foodTotal: number;
   isBooking: boolean;
-  onProceed: () => void;
+  onProceed: (finalAmount: number) => void;
 }
 
 export default function SidebarCart({ ticketTotal, foodTotal, isBooking, onProceed }: SidebarCartProps) {
   const hasFood = foodTotal > 0;
-  const grandTotal = ticketTotal + foodTotal;
+  const subtotal = ticketTotal + foodTotal;
+  
+  const [discount, setDiscount] = useState(0);
+  const grandTotal = subtotal - discount;
 
   return (
     <div className="w-80 bg-white min-h-screen border-l shadow-sm flex flex-col">
@@ -22,7 +27,7 @@ export default function SidebarCart({ ticketTotal, foodTotal, isBooking, onProce
         <span className="text-sm font-bold text-gray-800">₹{ticketTotal.toFixed(2)}</span>
       </div>
 
-      <div className="flex-1 flex flex-col p-6">
+      <div className="flex-1 flex flex-col p-6 overflow-y-auto">
         <h2 className="text-lg font-bold text-gray-800 mb-6">Your Cart</h2>
 
         {!hasFood ? (
@@ -38,25 +43,46 @@ export default function SidebarCart({ ticketTotal, foodTotal, isBooking, onProce
               <span className="text-sm text-gray-600 font-medium">Food & Beverage</span>
               <span className="text-sm font-bold text-gray-800">₹{foodTotal.toFixed(2)}</span>
             </div>
-            <div className="flex justify-between items-center text-lg font-bold text-gray-900 mt-auto pt-4 border-t border-dashed">
+          </div>
+        )}
+
+        <div className="mt-auto">
+          <CouponInput 
+            subtotal={subtotal} 
+            onDiscountApplied={(discountAmount) => setDiscount(discountAmount)} 
+          />
+
+          <div className="border-t border-dashed pt-4">
+            <div className="flex justify-between items-center text-sm text-gray-600 mb-2">
+              <span>Subtotal</span>
+              <span>₹{subtotal.toFixed(2)}</span>
+            </div>
+            {discount > 0 && (
+              <div className="flex justify-between items-center text-sm text-green-600 font-bold mb-2">
+                <span>Coupon Discount</span>
+                <span>- ₹{discount.toFixed(2)}</span>
+              </div>
+            )}
+            <div className="flex justify-between items-center text-lg font-bold text-gray-900 mt-2">
               <span>Amount Payable</span>
               <span>₹{grandTotal.toFixed(2)}</span>
             </div>
-            <button 
-              onClick={onProceed}
-              disabled={isBooking}
-              className="w-full bg-[#f84464] hover:bg-[#e03c5a] disabled:bg-gray-400 text-white font-medium py-3 rounded shadow-sm transition mt-6 flex items-center justify-center gap-2"
-            >
-              {isBooking ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" /> Finalizing...
-                </>
-              ) : (
-                "Proceed"
-              )}
-            </button>
           </div>
-        )}
+
+          <button 
+            onClick={() => onProceed(grandTotal)}
+            disabled={isBooking || grandTotal === 0 && subtotal === 0}
+            className="w-full bg-[#f84464] hover:bg-[#e03c5a] disabled:bg-gray-400 text-white font-medium py-3 rounded shadow-sm transition mt-6 flex items-center justify-center gap-2"
+          >
+            {isBooking ? (
+              <>
+                <Loader2 className="w-5 h-5 animate-spin" /> Finalizing...
+              </>
+            ) : (
+              "Proceed"
+            )}
+          </button>
+        </div>
       </div>
     </div>
   );

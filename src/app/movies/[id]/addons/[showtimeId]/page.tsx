@@ -87,7 +87,7 @@ export default function AddonsPage({
         return;
       }
 
-      // Create Order
+      // Create Order with the discounted amountToPay
       const orderRes = await fetch("/api/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -272,7 +272,7 @@ export default function AddonsPage({
           ticketTotal={ticketTotal} 
           foodTotal={foodTotal} 
           isBooking={isBooking} 
-          onProceed={() => handleProceed(ticketTotal + foodTotal)} 
+          onProceed={(finalAmount) => handleProceed(finalAmount)} 
         />
       </div>
 
