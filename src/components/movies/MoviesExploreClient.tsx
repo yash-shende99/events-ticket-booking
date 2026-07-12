@@ -44,9 +44,7 @@ export default function MoviesExploreClient({ initialMovies }: { initialMovies: 
     <div className="sc-133848s-2 sc-1y4pbdw-7 irZrCs brQHRI" style={{ marginBottom: '15px' }}>
       <div role="button" tabIndex={0} aria-pressed="true" className="sc-133848s-2 sc-1y4pbdw-8 irZrCs cPELwM">
         <div className="sc-133848s-1 sc-1y4pbdw-9 koZWoJ cqdbhc">
-          <svg width="10" height="10" viewBox="0 0 10 10" fill="none" style={{ transform: 'rotate(90deg)' }}>
-            <path d="M1 3.5L5 7.5L9 3.5" stroke="#333333" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
-          </svg>
+          <svg width="20" height="10" color="#333333" style={{ transform: 'rotate(90deg)' }}><use href="/chunks/icons/common-icons-1cef1e0e.svg#icon-chevron-any-color"></use></svg>
         </div>
         {title}
       </div>
@@ -97,20 +95,11 @@ export default function MoviesExploreClient({ initialMovies }: { initialMovies: 
           </div>
 
           <div className="sc-133848s-2 sc-1j2rhyo-0 irZrCs fJtJkP" style={{ display: 'flex', flexWrap: 'wrap', gap: '25px' }}>
-            {filteredMovies.map((movie: any, idx: number) => (
+            {filteredMovies.map((movie: any) => (
               <div key={movie._id} className="sc-133848s-2 sc-1j2rhyo-1 irZrCs cRXXqU" style={{ width: 'calc(25% - 20px)' }}>
                 <Link href={`/movies/${movie._id}`} style={{ textDecoration: 'none' }}>
                   <div className="sc-133848s-3 sc-133848s-4 sc-116h1p7-0 gMFRkd iXgYfH igKivO" style={{ borderRadius: '8px', overflow: 'hidden', position: 'relative', width: '100%', aspectRatio: '2/3', backgroundColor: '#e5e5e5' }}>
-                    <Image
-                      src={movie.poster}
-                      alt={movie.title}
-                      fill
-                      className="sc-eyvjnt-1 fXzYyH"
-                      unoptimized
-                      style={{ objectFit: 'cover' }}
-                      loading={idx < 4 ? 'eager' : 'lazy'}
-                      priority={idx < 4}
-                    />
+                    <Image src={movie.poster} alt={movie.title} fill className="sc-eyvjnt-1 fXzYyH" unoptimized style={{ objectFit: 'cover' }} />
                     <div className="sc-116h1p7-1 eBwHkt" style={{ position: 'absolute', bottom: 0, width: '100%', backgroundColor: 'rgba(0,0,0,0.6)', color: '#fff', padding: '5px 10px', fontSize: '12px', display: 'flex', justifyContent: 'space-between' }}>
                       <span>⭐ {movie.rating}/10</span>
                       <span>{movie.votes} Votes</span>
@@ -118,7 +107,7 @@ export default function MoviesExploreClient({ initialMovies }: { initialMovies: 
                   </div>
                   <div className="sc-116h1p7-3 crEouQ" style={{ marginTop: '10px' }}>
                     <div className="sc-7o7nez-0 iHsoLV" style={{ fontSize: '16px', fontWeight: 500, color: '#333333', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{movie.title}</div>
-                    <div className="sc-7o7nez-0 hBfHlX" style={{ fontSize: '14px', color: '#666666', marginTop: '5px' }}>{movie.certification} • {(movie.languages || []).join(', ')}</div>
+                    <div className="sc-7o7nez-0 hBfHlX" style={{ fontSize: '14px', color: '#666666', marginTop: '5px' }}>{movie.certification} • {movie.languages.join(', ')}</div>
                   </div>
                 </Link>
               </div>
