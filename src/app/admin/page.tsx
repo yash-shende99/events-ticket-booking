@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Shield, Calendar, Users, Film, Activity, LogOut } from "lucide-react";
+import { Shield, Calendar, Users, Film, Activity, LogOut, Building2 } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 export default function AdminDashboard() {
@@ -59,6 +59,17 @@ export default function AdminDashboard() {
               </div>
               <h3 className="text-xl font-bold text-gray-900 mb-2">Global Schedule Engine</h3>
               <p className="text-gray-500 text-sm">Map pending organiser events to physical theaters and deploy platform-wide pricing models.</p>
+            </div>
+          </Link>
+
+          {/* Venue Management Card */}
+          <Link href="/admin/venues">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-[#f84464] transition cursor-pointer group">
+              <div className="w-12 h-12 rounded-lg bg-red-50 text-[#f84464] flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Venue & Screen Management</h3>
+              <p className="text-gray-500 text-sm">Create physical theaters, cinemas, and manage internal screens (e.g., Audi 1, IMAX).</p>
             </div>
           </Link>
 
