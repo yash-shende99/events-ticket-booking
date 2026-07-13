@@ -1,8 +1,10 @@
 "use client";
 
-import { useState, use } from "react";
+import { useState, use, useEffect } from "react";
 import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 import SeatLayoutGrid from "@/components/buytickets/SeatLayoutGrid";
 import SeatSelectionFooter from "@/components/buytickets/SeatSelectionFooter";
 
@@ -15,6 +17,7 @@ export default function SeatLayoutPage({
 }) {
   const params = use(paramsPromise);
   const searchParams = use(searchParamsPromise);
+  const router = useRouter();
 
   const seatsToSelect = parseInt(searchParams.seats || "2", 10);
   const time = searchParams.time || "11:05 PM";
@@ -23,6 +26,30 @@ export default function SeatLayoutPage({
 
   // State for seat selection
   const [selectedSeats, setSelectedSeats] = useState<{id: string, price: number}[]>([]);
+  const [bookedSeats, setBookedSeats] = useState<string[]>([]);
+  const [heldSeats, setHeldSeats] = useState<string[]>([]);
+  const [isHolding, setIsHolding] = useState(false);
+
+  // Fetch seat status
+  const fetchSeatStatus = async () => {
+    try {
+      const res = await fetch(`/api/showtimes/${params.showtimeId}/seats-status`);
+      const data = await res.json();
+      if (data.success) {
+        setBookedSeats(data.bookedSeats || []);
+        setHeldSeats(data.heldSeats || []);
+      }
+    } catch (error) {
+      console.error("Failed to fetch seat status", error);
+    }
+  };
+
+  useEffect(() => {
+    fetchSeatStatus();
+    // Poll every 5 seconds for real-time updates
+    const interval = setInterval(fetchSeatStatus, 5000);
+    return () => clearInterval(interval);
+  }, [params.showtimeId]);
 
   // Calculate total price
   const totalPrice = selectedSeats.reduce((sum, seat) => sum + seat.price, 0);
@@ -39,6 +66,44 @@ export default function SeatLayoutPage({
         // Deselect oldest and select new one if limit reached
         setSelectedSeats(prev => [...prev.slice(1), { id: seatId, price }]);
       }
+    }
+  };
+
+  const handleProceed = async () => {
+    if (selectedSeats.length !== seatsToSelect) return;
+    
+    setIsHolding(true);
+    const loadingToast = toast.loading("Securing your seats...");
+
+    try {
+      const seatIds = selectedSeats.map(s => s.id);
+      const res = await fetch(`/api/showtimes/${params.showtimeId}/hold-seats`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ seats: seatIds })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || data.error) {
+        toast.error(data.error || "Someone else just grabbed these seats!", { id: loadingToast });
+        // Clear selection and refresh map
+        setSelectedSeats([]);
+        fetchSeatStatus();
+        setIsHolding(false);
+        return;
+      }
+
+      toast.success("Seats secured! You have 10 minutes to complete checkout.", { id: loadingToast });
+      
+      // Navigate to checkout/addons
+      const seatString = seatIds.join(",");
+      router.push(`/movies/${params.id}/addons/${params.showtimeId}?total=${totalPrice}&seats=${seatString}`);
+
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred while securing seats.", { id: loadingToast });
+      setIsHolding(false);
     }
   };
 
@@ -81,6 +146,8 @@ export default function SeatLayoutPage({
         <SeatLayoutGrid 
           maxSeats={seatsToSelect} 
           selectedSeats={selectedSeats.map(s => s.id)}
+          bookedSeats={bookedSeats}
+          heldSeats={heldSeats}
           onSeatSelect={handleSeatSelect}
         />
       </main>
@@ -90,6 +157,7 @@ export default function SeatLayoutPage({
         totalPrice={totalPrice} 
         selectedCount={selectedSeats.length}
         maxSeats={seatsToSelect}
+        onProceed={handleProceed}
       />
     </div>
   );

@@ -11,6 +11,9 @@ export interface IUser extends Document {
   resetPasswordToken?: string;
   resetPasswordExpires?: Date;
   profilePicture?: string; // base64 or URL
+  bannerUrl?: string; // For Organizer Hub
+  companyName?: string; // For Organizer Hub
+  contactPhone?: string; // For Organizer Hub
   defaultLocation?: string;
   privacySettings?: { marketing: boolean };
   wishlistedMovies: mongoose.Types.ObjectId[];
@@ -24,12 +27,16 @@ const UserSchema: Schema = new Schema(
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String }, // Optional if we support OAuth later
+    role: { type: String, enum: ["customer", "organiser", "admin"], default: "customer" },
     roleId: { type: mongoose.Schema.Types.ObjectId, ref: 'Role' },
     isEmailVerified: { type: Boolean, default: false },
     verificationToken: { type: String },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
     profilePicture: { type: String },
+    bannerUrl: { type: String },
+    companyName: { type: String },
+    contactPhone: { type: String },
     defaultLocation: { type: String, default: "Pune" },
     privacySettings: { 
       marketing: { type: Boolean, default: true }

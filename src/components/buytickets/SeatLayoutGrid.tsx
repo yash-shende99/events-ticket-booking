@@ -5,10 +5,14 @@ import { useState } from "react";
 export default function SeatLayoutGrid({ 
   maxSeats, 
   selectedSeats,
+  bookedSeats = [],
+  heldSeats = [],
   onSeatSelect 
 }: { 
   maxSeats: number;
   selectedSeats: string[];
+  bookedSeats?: string[];
+  heldSeats?: string[];
   onSeatSelect: (seatId: string, price: number) => void;
 }) {
 
@@ -21,7 +25,9 @@ export default function SeatLayoutGrid({
           {Array.from({ length: count }).map((_, i) => {
             const seatId = `${rowLabel}${i + 1}`;
             const isSelected = selectedSeats.includes(seatId);
-            const isAvailable = !isSoldOut;
+            const isBooked = bookedSeats.includes(seatId) || isSoldOut;
+            const isHeld = heldSeats.includes(seatId);
+            const isAvailable = !isBooked && !isHeld;
 
             return (
               <button

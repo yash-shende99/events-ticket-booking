@@ -96,20 +96,6 @@ export default function RegisterPage() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
               />
             </div>
-            <div className="mb-4">
-              <label htmlFor="role" className="sr-only">Role</label>
-              <select
-                id="role"
-                name="role"
-                className="appearance-none rounded relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-[#f84464] focus:border-[#f84464] focus:z-10 sm:text-sm"
-                value={formData.roleName}
-                onChange={(e) => setFormData({ ...formData, roleName: e.target.value })}
-              >
-                <option value="Customer">Customer</option>
-                <option value="Organiser">Organiser</option>
-                <option value="Admin">Admin</option>
-              </select>
-            </div>
           </div>
 
           <div>
@@ -120,6 +106,15 @@ export default function RegisterPage() {
             >
               {isLoading ? "Signing up..." : "Sign up"}
             </button>
+          </div>
+          
+          <div className="mt-4 text-center">
+            <p className="text-sm text-gray-600">
+              Are you a business?{" "}
+              <Link href="/organiser/register" className="font-medium text-[#f84464] hover:text-[#b82947]">
+                Register as an Organiser
+              </Link>
+            </p>
           </div>
         </form>
       </div>

@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "@/lib/auth";
 import connectDB from "@/lib/db";
 import { Ticket } from "@/models/Ticket";
+import { SeatHold } from "@/models/SeatHold";
 import QRCode from "qrcode";
 import nodemailer from "nodemailer";
 import mongoose from "mongoose";
@@ -34,12 +35,67 @@ export async function POST(req: Request) {
 
     await connectDB();
 
-    // In a real app we'd verify seat availability and concurrency here.
-    // We'll skip complex concurrency since this is mock logic for the assignment, 
-    // but we will create the ticket.
+    // Database-Level Concurrency Protection
+    const parsedSeats = typeof seats === "string" && seats.includes(",") 
+      ? seats.split(",") 
+      : Array.from({ length: parseInt(seats) || 1 }, (_, i) => `Seat ${i + 1}`);
+
+    // Check 1: Are the seats already confirmed by anyone?
+    const existingTicket = await Ticket.findOne({
+      showtime: showtimeId,
+      status: "CONFIRMED",
+      seats: { $in: parsedSeats }
+    });
+
+    if (existingTicket) {
+      return NextResponse.json({ error: "One or more selected seats were just booked by another user." }, { status: 409 });
+    }
+
+    // Check Waitlist Claim Token (if provided)
+    let validClaim = false;
+    let holdUserId = userId;
+    
+    if (claimToken) {
+      const { Waitlist } = require("@/models/Waitlist");
+      const waitlistEntry = await Waitlist.findOne({
+        showtimeId,
+        claimToken: claimToken,
+        status: "notified",
+        claimExpiresAt: { $gt: new Date() }
+      });
+
+      if (waitlistEntry) {
+        validClaim = true;
+        holdUserId = waitlistEntry.userId ? waitlistEntry.userId.toString() : waitlistEntry._id.toString();
+        
+        waitlistEntry.status = "booked";
+        await waitlistEntry.save();
+      }
+    }
+
+    // Check 2: Are the seats currently held by someone else?
+    if (!validClaim) {
+      const now = new Date();
+      const existingHold = await SeatHold.findOne({
+        showtimeId: showtimeId,
+        seatId: { $in: parsedSeats },
+        expiresAt: { $gt: now },
+        userId: { $ne: userId }
+      });
+
+      if (existingHold) {
+        return NextResponse.json({ error: "One or more selected seats are currently being held by another user." }, { status: 409 });
+      }
+    }
 
     const bookingRef = `BK${Math.floor(10000 + Math.random() * 90000)}`;
-    const parsedSeats = Array.from({ length: parseInt(seats) }, (_, i) => `Seat ${i + 1}`);
+
+    // Clear any holds we had on these seats now that they are booked
+    await SeatHold.deleteMany({
+      showtimeId: showtimeId,
+      seatId: { $in: parsedSeats },
+      userId: userId
+    });
 
     // Fetch user for email (if exists, else fallback)
     const user = await User.findById(userId);

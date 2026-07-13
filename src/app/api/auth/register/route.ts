@@ -37,6 +37,7 @@ export async function POST(req: NextRequest) {
       email,
       password: hashedPassword,
       roleId: role._id,
+      role: targetRoleName.toLowerCase(), // Store the string role for our new middleware/redirect logic
       isEmailVerified: true, // Auto-verify
       verificationToken: undefined,
     });

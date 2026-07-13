@@ -15,13 +15,19 @@ export default function AddonsPage({
   searchParams: searchParamsPromise,
 }: {
   params: Promise<{ id: string; showtimeId: string }>;
-  searchParams: Promise<{ total?: string; seats?: string; time?: string; date?: string; theater?: string }>;
+  searchParams: Promise<{ total?: string; seats?: string; time?: string; date?: string; theater?: string; claimToken?: string }>;
 }) {
   const params = use(paramsPromise);
   const searchParams = use(searchParamsPromise);
 
   const ticketTotal = parseInt(searchParams.total || "0", 10);
-  const seatsToSelect = parseInt(searchParams.seats || "2", 10);
+  const selectedSeatsList = searchParams.seats || "";
+  const claimToken = searchParams.claimToken;
+  
+  // If it's a comma separated list like A1,A2, length is the number of seats.
+  // Otherwise if it was an old count like "2", it falls back to 1 seat unless handled. 
+  // Our new flow always provides "A1,A2".
+  const seatsToSelectCount = selectedSeatsList.includes(",") ? selectedSeatsList.split(",").length : 1;
   
   // Dynamic Showtime State
   const [showtime, setShowtime] = useState<any>(null);
@@ -118,9 +124,10 @@ export default function AddonsPage({
               body: JSON.stringify({
                 movieId: params.id,
                 showtimeId: params.showtimeId,
-                seats: seatsToSelect.toString(),
+                seats: selectedSeatsList,
                 time: showtime?.time || "11:05 PM",
                 totalPrice: amountToPay,
+                claimToken: claimToken,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_signature: response.razorpay_signature,
@@ -172,7 +179,7 @@ export default function AddonsPage({
         <div className="flex items-center justify-between px-4 py-3">
           <div className="flex items-center gap-4">
             <Link 
-              href={`/movies/${params.id}/seat-layout/${params.showtimeId}?seats=${seatsToSelect}&time=${encodeURIComponent(showtime?.time || "11:05 PM")}`}
+              href={`/movies/${params.id}/seat-layout/${params.showtimeId}?seats=${seatsToSelectCount}&time=${encodeURIComponent(showtime?.time || "11:05 PM")}`}
               className="p-2 hover:bg-gray-100 rounded-full transition"
             >
               <ChevronLeft className="w-5 h-5 text-gray-600" />

@@ -12,6 +12,24 @@ const ShowtimeSchema = new mongoose.Schema(
       ref: "Theater",
       required: true,
     },
+    screen: {
+      type: String, // e.g., "Hall 1", "Main Stage"
+      default: "Screen 1"
+    },
+    capacity: {
+      type: Number,
+      default: 100
+    },
+    pricing: {
+      premium: { type: Number, default: 500 },
+      standard: { type: Number, default: 300 },
+      economy: { type: Number, default: 150 }
+    },
+    dynamicPricing: {
+      isWeekendPricing: { type: Boolean, default: false },
+      isFestivalPricing: { type: Boolean, default: false },
+      isEarlyBirdActive: { type: Boolean, default: false },
+    },
     date: {
       type: String, // format: "YYYY-MM-DD"
       required: true,
@@ -33,7 +51,7 @@ const ShowtimeSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["available", "filling", "almost-full"],
+      enum: ["available", "filling", "almost-full", "sold-out"],
       default: "available",
     },
     isLate: {

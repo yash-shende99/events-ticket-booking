@@ -13,6 +13,12 @@ export interface IMovie extends Document {
   poster: string;
   about: string;
   cast: { name: string; role: string; image: string }[];
+  organiserId?: mongoose.Types.ObjectId;
+  eventType?: string;
+  status?: string;
+  bannerUrl?: string;
+  trailerUrl?: string;
+  gallery?: string[];
   createdAt: Date;
   updatedAt: Date;
 }
@@ -36,7 +42,13 @@ const MovieSchema: Schema = new Schema(
         role: { type: String, required: true },
         image: { type: String, required: true },
       },
-    ]
+    ],
+    organiserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    eventType: { type: String, enum: ["Movie", "Concert", "Sports", "Stand-up", "Theatre"], default: "Movie" },
+    status: { type: String, enum: ["Draft", "Pending Schedule", "Published", "Upcoming", "Completed", "Cancelled"], default: "Draft" },
+    bannerUrl: { type: String },
+    trailerUrl: { type: String },
+    gallery: { type: [String] }
   },
   {
     timestamps: true,

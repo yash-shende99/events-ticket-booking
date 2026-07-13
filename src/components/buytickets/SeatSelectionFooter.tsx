@@ -7,11 +7,13 @@ import { useRouter, useParams } from "next/navigation";
 export default function SeatSelectionFooter({ 
   totalPrice = 0, 
   selectedCount = 0,
-  maxSeats = 0
+  maxSeats = 0,
+  onProceed
 }: { 
   totalPrice?: number;
   selectedCount?: number;
   maxSeats?: number;
+  onProceed?: () => void;
 }) {
   const [isTermsOpen, setIsTermsOpen] = useState(false);
   const isReady = selectedCount === maxSeats && maxSeats > 0;
@@ -35,7 +37,7 @@ export default function SeatSelectionFooter({
           </div>
           <div className="flex items-center gap-2">
             <div className="w-4 h-4 border border-gray-200 bg-gray-200 rounded-sm"></div>
-            <span className="text-xs text-gray-600 font-medium">Sold</span>
+            <span className="text-xs text-gray-600 font-medium">Sold / Held</span>
           </div>
         </div>
 
@@ -58,7 +60,11 @@ export default function SeatSelectionFooter({
         onClose={() => setIsTermsOpen(false)}
         onAccept={() => {
           setIsTermsOpen(false);
-          router.push(`/movies/${params.id}/addons/${params.showtimeId}?total=${totalPrice}&seats=${maxSeats}`);
+          if (onProceed) {
+            onProceed();
+          } else {
+            router.push(`/movies/${params.id}/addons/${params.showtimeId}?total=${totalPrice}&seats=${maxSeats}`);
+          }
         }}
       />
     </div>

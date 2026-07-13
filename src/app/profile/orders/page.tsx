@@ -9,6 +9,8 @@ import { Ticket } from "@/models/Ticket";
 import { EventTicket } from "@/models/EventTicket";
 import { Calendar, MapPin, ChevronRight, Ticket as TicketIcon } from "lucide-react";
 
+import CancelBookingButton from "@/components/profile/CancelBookingButton";
+
 // Ensure all schemas are registered
 import "@/models/Movie";
 import "@/models/Showtime";
@@ -29,6 +31,7 @@ type UnifiedOrder = {
   status: string;
   createdAt: Date;
   seatsOrTickets: string;
+  rawSeats?: string[];
   ticketLink: string;
 };
 
@@ -75,6 +78,7 @@ export default async function OrdersPage() {
       status: t.status,
       createdAt: new Date(t.createdAt),
       seatsOrTickets: t.seats ? t.seats.join(", ") : "N/A",
+      rawSeats: t.seats,
       ticketLink: `/movies/${movie?._id}/booking-success/${t.bookingId}`,
     });
   }
@@ -198,11 +202,17 @@ export default async function OrdersPage() {
                   </div>
                   
                   <Link href={order.ticketLink} className="w-full">
-                    <button className="w-full bg-white border border-[#f84464] text-[#f84464] hover:bg-red-50 font-semibold py-2.5 rounded-lg transition-colors flex items-center justify-center gap-1.5 text-sm">
-                      View E-Ticket
-                      <ChevronRight className="w-4 h-4" />
+                    <button className="w-full bg-white border border-gray-200 hover:border-gray-300 hover:bg-gray-50 text-gray-700 font-semibold py-2.5 px-4 rounded-lg shadow-sm transition flex items-center justify-center gap-2 text-sm group">
+                      View Ticket
+                      <ChevronRight className="w-4 h-4 text-gray-400 group-hover:text-gray-600 transition" />
                     </button>
                   </Link>
+
+                  {order.status === 'CONFIRMED' && order.type === 'MOVIE' && (
+                    <div className="mt-4 flex justify-center">
+                      <CancelBookingButton bookingId={order._id} availableSeats={order.rawSeats || []} />
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

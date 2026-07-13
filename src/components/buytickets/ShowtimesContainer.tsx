@@ -3,11 +3,13 @@
 import { useState, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Info, Search, Heart, MapPin, Smartphone } from "lucide-react";
 import SeatSelectionModal from "./SeatSelectionModal";
+import WaitlistModal from "./WaitlistModal";
 import { useRouter, useParams, useSearchParams } from "next/navigation";
 
 export default function ShowtimesContainer() {
   const [selectedIdx, setSelectedIdx] = useState(0);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isWaitlistOpen, setIsWaitlistOpen] = useState(false);
   const [selectedShowtime, setSelectedShowtime] = useState<any>(null);
   const [displayedTheaters, setDisplayedTheaters] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -199,6 +201,11 @@ export default function ShowtimesContainer() {
                           borderColor = "border-[#f84464]/40 hover:border-[#f84464]";
                           hoverBg = "hover:bg-[#f84464]/5";
                         }
+                        if (show.status === "sold-out") {
+                          textColor = "text-gray-400";
+                          borderColor = "border-gray-200";
+                          hoverBg = "hover:bg-gray-100/50";
+                        }
 
                         return (
                           <div 
@@ -206,7 +213,11 @@ export default function ShowtimesContainer() {
                             className="relative group cursor-pointer"
                             onClick={() => {
                               setSelectedShowtime(show);
-                              setIsModalOpen(true);
+                              if (show.status === "sold-out") {
+                                setIsWaitlistOpen(true);
+                              } else {
+                                setIsModalOpen(true);
+                              }
                             }}
                           >
                             {show.isLate && (
@@ -215,8 +226,8 @@ export default function ShowtimesContainer() {
                               </div>
                             )}
                             <div className={`px-4 py-2.5 rounded-lg border ${borderColor} ${hoverBg} bg-white flex flex-col items-center justify-center min-w-[100px] transition-all duration-300 ease-out group-hover:shadow-sm group-hover:-translate-y-[1px]`}>
-                              <span className={`text-[13px] font-semibold ${textColor} tracking-tight`}>{show.time}</span>
-                              <span className="text-[8.5px] font-medium text-gray-400 mt-1 uppercase text-center leading-tight max-w-[85px] tracking-widest">{show.type}</span>
+                              <span className={`text-[13px] font-semibold ${textColor} tracking-tight ${show.status === 'sold-out' ? 'line-through opacity-70' : ''}`}>{show.time}</span>
+                              <span className={`text-[8.5px] font-medium mt-1 uppercase text-center leading-tight max-w-[85px] tracking-widest ${show.status === 'sold-out' ? 'text-[#f84464]' : 'text-gray-400'}`}>{show.status === 'sold-out' ? 'Waitlist' : show.type}</span>
                             </div>
                           </div>
                         );
@@ -240,6 +251,12 @@ export default function ShowtimesContainer() {
             router.push(`/movies/${params.id}/seat-layout/${selectedShowtime._id}?seats=${count}&time=${encodeURIComponent(selectedShowtime.time)}`);
           }
         }}
+      />
+
+      <WaitlistModal 
+        isOpen={isWaitlistOpen}
+        onClose={() => setIsWaitlistOpen(false)}
+        showtimeId={selectedShowtime?._id}
       />
     </div>
   );
