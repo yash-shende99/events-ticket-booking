@@ -35,8 +35,18 @@ function LoginForm() {
       }
       
       toast.success("Logged in successfully!");
-      router.push(callbackUrl);
-      router.refresh();
+      
+      // Check role directly from the server to avoid client cache issues
+      const sessionRes = await fetch('/api/auth/session?update=' + Date.now(), { cache: 'no-store' });
+      const sessionData = await sessionRes.json();
+      
+      if (sessionData?.user?.role === "admin") {
+        window.location.href = "/admin";
+      } else if (sessionData?.user?.role === "organiser") {
+        window.location.href = "/organiser";
+      } else {
+        window.location.href = callbackUrl || "/";
+      }
     } catch (error: any) {
       toast.error(error.message);
     } finally {

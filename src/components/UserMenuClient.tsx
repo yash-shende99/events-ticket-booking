@@ -2,7 +2,9 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { UserCircle, Menu, ChevronRight, Bell, ShoppingBag, Heart, MessageCircle, Settings, LogOut, X, Info } from "lucide-react";
+import { usePathname } from "next/navigation";
+import { signOut } from "next-auth/react";
+import { UserCircle, Menu, ChevronRight, Bell, ShoppingBag, Heart, MessageCircle, Settings, LogOut, X, Info, TrendingUp, Film, PlusCircle, Calendar } from "lucide-react";
 
 interface UserMenuClientProps {
   isAuthenticated: boolean;
@@ -11,6 +13,8 @@ interface UserMenuClientProps {
 
 export default function UserMenuClient({ isAuthenticated, userName }: UserMenuClientProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const pathname = usePathname();
+  const isOrganiserRoute = pathname?.startsWith("/organiser");
 
   // Prevent background scrolling when menu is open
   useEffect(() => {
@@ -26,7 +30,7 @@ export default function UserMenuClient({ isAuthenticated, userName }: UserMenuCl
 
   const toggleMenu = () => setIsOpen(!isOpen);
 
-  const menuItems = [
+  const customerMenuItems = [
     {
       title: "Notifications",
       icon: <Bell className="w-5 h-5 text-gray-500" />,
@@ -37,6 +41,12 @@ export default function UserMenuClient({ isAuthenticated, userName }: UserMenuCl
       subtitle: "View all your bookings & purchases",
       icon: <ShoppingBag className="w-5 h-5 text-gray-500" />,
       href: "/profile/orders"
+    },
+    {
+      title: "Your Waitlists",
+      subtitle: "View your queue positions",
+      icon: <Bell className="w-5 h-5 text-gray-500" />,
+      href: "/profile/waitlists"
     },
     {
       title: "Your Wishlist",
@@ -56,6 +66,29 @@ export default function UserMenuClient({ isAuthenticated, userName }: UserMenuCl
       href: "/profile/settings"
     }
   ];
+
+  const organiserMenuItems = [
+    {
+      title: "Dashboard",
+      subtitle: "View your analytics",
+      icon: <TrendingUp className="w-5 h-5 text-gray-500" />,
+      href: "/organiser"
+    },
+    {
+      title: "Create Listing",
+      subtitle: "Publish a new event or movie",
+      icon: <PlusCircle className="w-5 h-5 text-gray-500" />,
+      href: "/organiser/create-event"
+    },
+    {
+      title: "Settings",
+      subtitle: "Profile & Branding",
+      icon: <Settings className="w-5 h-5 text-gray-500" />,
+      href: "/organiser/settings"
+    }
+  ];
+
+  const menuItems = isOrganiserRoute ? organiserMenuItems : customerMenuItems;
 
   return (
     <>
@@ -150,10 +183,9 @@ export default function UserMenuClient({ isAuthenticated, userName }: UserMenuCl
           {isAuthenticated ? (
             <button 
               className="w-full py-3 rounded-lg border border-[#f84464] text-[#f84464] font-semibold hover:bg-red-50 transition-colors"
-              onClick={() => {
-                // Mock sign out for UI, in a real app would call signOut()
-                alert("Sign out clicked");
+              onClick={async () => {
                 setIsOpen(false);
+                await signOut({ callbackUrl: "/" });
               }}
             >
               Sign out
