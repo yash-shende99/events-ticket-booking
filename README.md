@@ -293,7 +293,75 @@ sequenceDiagram
 
 ---
 
-## 5. Setup & Local Development Guide
+### 4.1 Waitlist Implementation (Deep Dive)
+
+When a booking is cancelled, the system executes this atomic sequence to find the next waiting user:
+
+```javascript
+// Serverless API Action (/api/waitlist/process-cancellation)
+const nextInLine = await Waitlist.findOneAndUpdate(
+  {
+    showtimeId: currentShowtimeId,
+    status: "WAITING",
+  },
+  {
+    $set: {
+      status: "OFFERED",
+      offerExpiresAt: new Date(Date.now() + 30 * 60 * 1000) // 30 min expiry
+    }
+  },
+  { sort: { createdAt: 1 }, new: true } // Guarantees FIFO Queue Ordering
+);
+
+if (nextInLine) {
+    // Generate time-limited JWT token & trigger Priority Email
+    await sendPriorityEmail(nextInLine.userId, offerToken);
+}
+```
+
+---
+
+## 5. Database Indexing & Performance 🚀
+
+To support high-concurrency read/writes during massive event drops, the MongoDB database relies on heavily optimized indexes:
+
+```javascript
+// 1. Core Concurrency Index (Fast seat availability lookup)
+SeatSchema.index({ showtimeId: 1, status: 1, seatNumber: 1 }, { unique: true });
+
+// 2. Waitlist FIFO Optimization Index
+WaitlistSchema.index({ showtimeId: 1, status: 1, createdAt: 1 });
+
+// 3. Automated Time-To-Live (TTL) Cleanup Index
+SeatSchema.index(
+  { holdExpiresAt: 1 },
+  { expireAfterSeconds: 0, partialFilterExpression: { status: 'HELD' } }
+);
+```
+*Note: The TTL index ensures that if the Next.js server crashes mid-checkout, MongoDB itself will automatically evict the hold after 10 minutes without requiring a manual cron job.*
+
+---
+
+## 6. Security & Role-Based Access Control 🔒
+
+The platform employs strict API and Route-level guarding via Next.js Middleware and NextAuth JWTs.
+
+```typescript
+// middleware.ts snippet
+export function middleware(request: NextRequest) {
+  const session = await getToken({ req: request });
+  const path = request.nextUrl.pathname;
+
+  // Hard block standard users from Organizer/Admin panels
+  if (path.startsWith('/organiser') && session?.role !== 'organiser') {
+    return NextResponse.redirect(new URL('/?error=Unauthorized', request.url));
+  }
+}
+```
+
+---
+
+## 7. Setup & Local Development Guide
 
 <details>
 <summary><strong>🛠️ Click to expand setup instructions</strong></summary>
@@ -347,7 +415,7 @@ yarn dev
 
 ---
 
-## 6. Project Structure (Monorepo)
+## 8. Project Structure (Monorepo)
 
 ```text
 ├── src/
@@ -367,7 +435,7 @@ yarn dev
 
 ---
 
-## 7. API Design & Documentation
+## 9. API Design & Documentation
 
 - `POST /api/showtimes/[id]/hold-seats` - Validates seat availability and atomically applies a hold TTL.
 - `POST /api/showtimes/[id]/book` - Finalizes a payment session and converts HELD seats to BOOKED.
@@ -377,7 +445,7 @@ yarn dev
 
 ---
 
-## 📸 8. Screenshots
+## 📸 10. Screenshots
 
 *(Replace the placeholder URLs with actual screenshots from your repository. You can upload them to a `/public/docs` folder or host them via GitHub issues/imgur).*
 
