@@ -32,7 +32,7 @@ export async function POST(
       return NextResponse.json({ error: "Ticket is already cancelled" }, { status: 400 });
     }
 
-    let cancelledSeats = [];
+    let cancelledSeats: string[] = [];
     if (!seatsToCancel || !Array.isArray(seatsToCancel) || seatsToCancel.length === 0) {
       // Cancel everything
       cancelledSeats = [...ticket.seats];
@@ -94,6 +94,8 @@ export async function POST(
           // No more waitlist users can be satisfied with the remaining seats
           break;
         }
+
+        const assignedSeats = remainingSeats.splice(0, waitlistUser.seatsNeeded);
 
         const claimToken = Math.random().toString(36).substring(2, 15) + Math.random().toString(36).substring(2, 15);
         const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
