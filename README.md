@@ -1,11 +1,44 @@
-# CineVerse - Advanced Movie Ticket Booking Platform
+# CineVerse - Advanced Ticketing & Event Management Platform
 
-CineVerse is a highly scalable, multi-tenant movie ticket booking platform built with Next.js 15, MongoDB, and TailwindCSS. It features a complete tripartite architecture designed for Admins, Theatre Organizers, and Customers, simulating the core engine of platforms like BookMyShow or Ticketmaster.
+CineVerse is a highly scalable, multi-tenant ticketing platform built with Next.js 15, MongoDB, and TailwindCSS. It features a complete tripartite architecture designed for Admins, Theatre/Event Organizers, and Customers, simulating the core engine of platforms like BookMyShow or Ticketmaster.
 
-## Key Technical Achievements
-- **High-Concurrency Seat Holding Engine:** Prevents double-booking using atomic database transactions and a strict 10-minute hold TTL.
+## 🚀 Live Demo & Environments
+
+**Live Application URL:** [https://events-ticket-booking.vercel.app](https://events-ticket-booking.vercel.app) *(Update with your actual Vercel/Render URL)*
+
+To experience the full system architecture, use the following pre-configured demo accounts:
+
+1. **Admin / Superuser** (Full system control)
+   - Email: `yashshende9999@gmail.com`
+   - Password: *(Google OAuth / NextAuth configured)*
+2. **Organizer** (Pre-loaded with 26 Movies & Events, Revenue Dashboards)
+   - Email: `yash.22310893@viit.ac.in`
+   - Password: *(Google OAuth / NextAuth configured)*
+3. **Customer / User** (Booking flow, waitlists, checkout)
+   - Email: `hvdpvd4@gmail.com`
+   - Password: *(Google OAuth / NextAuth configured)*
+
+## ✨ Key Technical Achievements
+
+- **Unified Super Schema:** Supports both traditional Movie Screenings (with interactive seat mapping) and Live Events (with dynamic pricing tiers) seamlessly.
+- **High-Concurrency Seat Holding Engine:** Prevents double-booking using atomic database transactions and a strict 10-minute hold TTL via database-level expiry and real-time state calculation.
 - **Automated Waitlist Processing:** Automatically detects cancelled bookings, pulls the next user from the queue, and emails a time-limited (30 mins) priority checkout link.
 - **Hardware-Integrated QR Validation:** Organizers can scan cryptographic Ticket QRs at the venue door using webcams or hardware barcode scanners for instant validation.
+- **Real-time Analytics Dashboard:** Dynamic Recharts integration showing ticket sales trends, category-wise revenue distribution, and robust event performance comparisons.
+
+---
+
+## 📸 Screenshots
+
+*(Replace the placeholder URLs with actual screenshots from your repository. You can upload them to a `/public/docs` folder or host them via GitHub issues/imgur).*
+
+### Customer Flow (Seat Selection & YouTube Trailers)
+![Seat Selection Map](https://via.placeholder.com/800x400?text=Interactive+Seat+Map+Screenshot)
+![Movie Details](https://via.placeholder.com/800x400?text=Movie+Details+%26+Trailer+Screenshot)
+
+### Organizer Dashboard (Revenue Analytics)
+![Organizer Dashboard](https://via.placeholder.com/800x400?text=Organizer+Revenue+Dashboard+Screenshot)
+![Booking Management](https://via.placeholder.com/800x400?text=Booking+Management+Table+Screenshot)
 
 ---
 
@@ -40,7 +73,7 @@ graph TD
 
 ---
 
-## 2. ER Diagram (Database Schema)
+## 2. Database Schema Overview (ER Diagram)
 
 ```mermaid
 erDiagram
@@ -65,7 +98,8 @@ erDiagram
     MOVIE {
         ObjectId _id
         String title
-        String genre
+        String eventType "Movie | Event | Concert"
+        Object basePricing "Custom Ticket Tiers"
     }
 
     SHOWTIME ||--o{ SEAT : contains
@@ -138,34 +172,7 @@ Because MongoDB guarantees atomicity at the document level, if 100 threads hit t
 
 ---
 
-## 4. Seat Hold Flow
-
-```mermaid
-sequenceDiagram
-    participant User
-    participant Frontend
-    participant Database
-    
-    User->>Frontend: Selects Seat A1
-    Frontend->>Database: POST /hold-seat (Attempt Atomic Hold)
-    
-    alt Seat is AVAILABLE
-        Database-->>Frontend: Success (Seat HELD, 10 min TTL)
-        Frontend->>User: Displays 10:00 Countdown Timer
-        User->>Frontend: Completes Payment within 10 mins
-        Frontend->>Database: POST /confirm-booking
-        Database-->>Frontend: Seat updated to BOOKED
-    else Seat is already HELD or BOOKED
-        Database-->>Frontend: Failure (Returns null)
-        Frontend->>User: "Seat no longer available" Error
-    else Timer Expires (No Payment)
-        Database->>Database: Background Cron resets HELD -> AVAILABLE
-    end
-```
-
----
-
-## 5. Waitlist Auto-Assignment Flow
+## 4. Waitlist Auto-Assignment Flow
 
 ```mermaid
 sequenceDiagram
@@ -196,31 +203,59 @@ sequenceDiagram
 
 ---
 
-## 6. System Design & Security
+## 5. Setup & Local Development Guide
 
-### Dual Role Architecture
-- **Admin**: Has global access to all data, approves events, manages overarching platform rules.
-- **Organizer**: Restricted to their own `organiserId`. Can only view bookings, validate tickets, and manage staff for the venues *they* own.
+### Prerequisites
+- Node.js 18+
+- MongoDB instance (Atlas or local)
+- Google Cloud Console account (for OAuth)
 
-### Cryptographic QR Validation
-When a ticket is generated, the `ticketId` is embedded in a QR code. When the Organizer scans this code at the venue door via `/api/organiser/validate-ticket`, the system first verifies that the currently logged-in Organizer actually owns the specific `theaterId` associated with the ticket, preventing unauthorized check-ins.
+### Environment Variables (`.env.local`)
+Create a `.env.local` file in the root directory:
+```env
+MONGODB_URI=mongodb+srv://<user>:<password>@cluster...
+NEXTAUTH_SECRET=generate_a_random_secure_string
+NEXTAUTH_URL=http://localhost:3000
 
-### Next.js 15 Serverless Optimization
-The platform utilizes Next.js App Router with server-side rendering for initial load speeds and SEO optimization, falling back to CSR (Client-Side Rendering) for highly dynamic components like the live Seat Map.
+# Google OAuth
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+
+# Email Service (for QR & Waitlist)
+EMAIL_SERVER_USER=your_email@gmail.com
+EMAIL_SERVER_PASSWORD=your_app_password
+```
+
+### Installation
+
+1. Clone the repository
+```bash
+git clone https://github.com/yash-shende99/events-ticket-booking.git
+cd events-ticket-booking
+```
+
+2. Install dependencies
+```bash
+npm install
+# or
+yarn install
+```
+
+3. Run the development server
+```bash
+npm run dev
+# or
+yarn dev
+```
+
+4. Open [http://localhost:3000](http://localhost:3000) with your browser.
 
 ---
 
-## 7. Core API Reference
+## 6. API Design & Documentation
 
-### Seat Management
-- `POST /api/bookings/hold` - Attempts an atomic hold on requested seats.
-- `POST /api/bookings/release` - Manually releases a hold.
-- `POST /api/bookings/confirm` - Converts a HELD seat to BOOKED upon payment success.
-
-### Waitlist Management
-- `POST /api/waitlists/join` - Adds a user to the end of the waitlist queue.
-- `GET /api/waitlists/check-status` - Polls the user's current queue position and status.
-
-### Organizer Management
-- `POST /api/organiser/validate-ticket` - Validates a scanned QR code and toggles status between `UNUSED`, `USED`, and `EXPIRED`.
-- `GET /api/organiser/stats` - Aggregates ticket sales, revenue, and occupancy data grouped by the Organizer's venues.
+- `POST /api/showtimes/[id]/hold-seats` - Validates seat availability and atomically applies a hold TTL.
+- `POST /api/showtimes/[id]/book` - Finalizes a payment session and converts HELD seats to BOOKED.
+- `POST /api/waitlist/[id]/join` - Adds a user to the seat waitlist queue.
+- `POST /api/wishlist` - Synchronizes user event interest tracking.
+- `GET /api/organiser/stats` - Aggregates secure venue-level revenue analytics for the Organizer dashboard.
