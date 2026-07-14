@@ -389,11 +389,6 @@ yarn dev
 ![Organizer Dashboard](https://via.placeholder.com/800x400?text=Organizer+Revenue+Dashboard+Screenshot)
 ![Booking Management](https://via.placeholder.com/800x400?text=Booking+Management+Table+Screenshot)
 
----
-
-## 📄 9. License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details. It is proprietary software built specifically for portfolio and evaluation purposes.
 
 ## 👨‍💻 10. Author / Contact
 
