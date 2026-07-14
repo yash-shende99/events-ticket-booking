@@ -40,11 +40,6 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
-# AI Agent files
-AGENTS.md
-CLAUDE.md
-agents.md
-claude.md
 
 # Placement Assignment Exclusions
 # Do not commit the reference folder to avoid pushing external code/assets
