@@ -1,6 +1,6 @@
 <div align="center">
   <h1>🍿 CineVerse</h1>
-  <p><strong>Next-Generation Ticketing & Event Management Ecosystem</strong></p>
+  <p><strong>Advanced Ticketing & Event Management Platform</strong></p>
   
   [![Live Demo](https://img.shields.io/badge/Live_Demo-Access_Now-FF4154?style=for-the-badge&logo=vercel)](https://events-ticket-booking-nine.vercel.app)
   
@@ -29,11 +29,15 @@ To experience the full system architecture, use the following pre-configured dem
 
 ## ✨ Key Technical Achievements
 
-- 🎟️ **Unified Super Schema:** Supports both traditional Movie Screenings (with interactive seat mapping) and Live Events (with dynamic pricing tiers) seamlessly.
-- ⚡ **High-Concurrency Seat Holding Engine:** Prevents double-booking using atomic database transactions and a strict 10-minute hold TTL via database-level expiry.
-- 🤖 **Automated Waitlist Processing:** Automatically detects cancelled bookings, pulls the next user from the queue, and emails a time-limited (30 mins) priority checkout link.
-- 📱 **Hardware-Integrated QR Validation:** Organizers can scan cryptographic Ticket QRs at the venue door using webcams or hardware barcode scanners for instant validation.
-- 📊 **Real-time Analytics Dashboard:** Dynamic Recharts integration showing ticket sales trends, category-wise revenue distribution, and robust event performance comparisons.
+🎟️ **Unified Super Schema:** Supports both traditional Movie Screenings (with interactive seat mapping) and Live Events (with dynamic pricing tiers) seamlessly.
+
+⚡ **High-Concurrency Seat Holding Engine:** Prevents double-booking using atomic database transactions and a strict 10-minute hold TTL via database-level expiry.
+
+🤖 **Automated Waitlist Processing:** Automatically detects cancelled bookings, pulls the next user from the queue, and emails a time-limited (30 mins) priority checkout link.
+
+📱 **Hardware-Integrated QR Validation:** Organizers can scan cryptographic Ticket QRs at the venue door using webcams or hardware barcode scanners for instant validation.
+
+📊 **Real-time Analytics Dashboard:** Dynamic Recharts integration showing ticket sales trends, category-wise revenue distribution, and robust event performance comparisons.
 
 ## 1. System Architecture
 
@@ -470,3 +474,6 @@ Here's a visual walkthrough of the CineVerse experience, from discovery to check
 | *Real-time booking and seat monitoring* | *Managing screen dimensions and layout matrices* |
 
 </div>
+
+<br/>
+<p align="center"><b>Built with ❤️ by Yash Shende</b></p>
