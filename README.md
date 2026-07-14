@@ -1,95 +1,43 @@
 <div align="center">
-  <a href="https://events-ticket-booking-nine.vercel.app" target="_blank">
-    <img src="website_screenshots/events-ticket-booking-nine.vercel.app_movies.png" alt="CineVerse Banner" width="100%" style="border-radius: 12px; margin-bottom: 20px; box-shadow: 0 4px 14px 0 rgba(0,0,0,0.15);"/>
-  </a>
-
   <h1>🍿 CineVerse</h1>
-  <p><strong>Next-Generation Ticketing & Event Management Ecosystem</strong></p>
+  <p><strong>Advanced Ticketing & Event Management Platform</strong></p>
   
-  <p>
-    <a href="https://events-ticket-booking-nine.vercel.app" target="_blank">
-      <img src="https://img.shields.io/badge/Live_Demo-Access_Now-FF4154?style=for-the-badge&logo=vercel" alt="Live Demo" />
-    </a>
-  </p>
-
-  <p>
-    ![Next.js 15](https://img.shields.io/badge/Next.js_15-black?style=for-the-badge&logo=next.js)
-    ![React 19](https://img.shields.io/badge/React_19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
-    ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript)
-    ![MongoDB Atlas](https://img.shields.io/badge/MongoDB_Atlas-47A248?style=for-the-badge&logo=mongodb)
-    ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css)
-  </p>
-  
-  <p><i>A highly scalable, multi-tenant ticketing platform engineered for high-concurrency seat locking, dynamic event management, and real-time revenue analytics. Built to simulate the core engine of industry-leading enterprise platforms.</i></p>
+  ![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
+  ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript)
+  ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb)
+  ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css)
 </div>
 
 <br/>
 
-## 🌟 Why CineVerse? (For Recruiters & Engineering Teams)
-
-CineVerse isn't just another CRUD app; it's designed to solve **real-world distributed systems problems** found in modern ticketing engines:
-
-- 🏎️ **Race Condition Prevention:** Utilizes MongoDB atomic operations (`findOneAndUpdate` with strict state matching) to completely eliminate double-booking when 1,000+ users try to book the exact same seat simultaneously.
-- 🤖 **Automated Waitlist Queue:** Features an automated First-In-First-Out (FIFO) daemon that detects booking cancellations, instantly triggers a time-limited priority checkout email to the next user, and automatically expires unfulfilled offers.
-- 🏗️ **Tripartite Tenant Architecture:** Cleanly separates the platform into three isolated environments (`Customer`, `Organiser`, and `SuperAdmin`), secured by NextAuth JWTs and Next.js Edge Middleware.
-- 🔒 **Cryptographic Door Validation:** Employs dynamic QR codes for digital ticketing, allowing physical venue scanning hardware to instantly cryptographically verify ticket authenticity at the door.
-- 📊 **Real-time Analytics Dashboard:** Dynamic Recharts integration showing ticket sales trends, category-wise revenue distribution, and robust event performance comparisons.
-
----
+CineVerse is a highly scalable, multi-tenant ticketing platform built with Next.js 15, MongoDB, and TailwindCSS. It features a complete tripartite architecture designed for Admins, Theatre/Event Organizers, and Customers, simulating the core engine of industry-leading platforms.
 
 ## 🚀 Live Demo & Environments
 
-**🌍 Launch Application:** [events-ticket-booking-nine.vercel.app](https://events-ticket-booking-nine.vercel.app)
+**Live Application URL:** [https://events-ticket-booking-nine.vercel.app](https://events-ticket-booking-nine.vercel.app)
 
 To experience the full system architecture, use the following pre-configured demo accounts:
 
-| Role | Email | Password | What You Can Do |
-| :--- | :--- | :--- | :--- |
-| 🛡️ **SuperAdmin** | `yashshende9999@gmail.com` | `123456` | Approve venues, monitor platform-wide analytics, manage global user base. |
-| 🎭 **Organizer** | `yash.22310893@viit.ac.in` | `123456` | Track real-time seat monitoring, view revenue dashboards, manage 26+ pre-loaded events. |
-| 👤 **Customer** | `hvdpvd4@gmail.com` | `123456` | Experience the booking flow, interactive seat map, add-ons, waitlists, and checkout. |
+1. **Admin / Superuser** (Full system control)
+   - Email: `yashshende9999@gmail.com`
+   - Password: `123456`
+2. **Organizer** (Pre-loaded with 26 Movies & Events, Revenue Dashboards)
+   - Email: `yash.22310893@viit.ac.in`
+   - Password: `123456`
+3. **Customer / User** (Booking flow, waitlists, checkout)
+   - Email: `hvdpvd4@gmail.com`
+   - Password: `123456`
 
----
+## ✨ Key Technical Achievements
 
-## 📸 Application Gallery
+- 🎟️ **Unified Super Schema:** Supports both traditional Movie Screenings (with interactive seat mapping) and Live Events (with dynamic pricing tiers) seamlessly.
+- ⚡ **High-Concurrency Seat Holding Engine:** Prevents double-booking using atomic database transactions and a strict 10-minute hold TTL via database-level expiry.
+- 🤖 **Automated Waitlist Processing:** Automatically detects cancelled bookings, pulls the next user from the queue, and emails a time-limited (30 mins) priority checkout link.
+- 📱 **Hardware-Integrated QR Validation:** Organizers can scan cryptographic Ticket QRs at the venue door using webcams or hardware barcode scanners for instant validation.
+- 📊 **Real-time Analytics Dashboard:** Dynamic Recharts integration showing ticket sales trends, category-wise revenue distribution, and robust event performance comparisons.
 
-<details>
-<summary><strong>👉 Click here to expand the visual walkthrough</strong></summary>
-<br/>
-
-<div align="center">
-
-### 👤 The Customer Experience
-
-| Homepage & Discovery | Dynamic Seat Selection |
-| :---: | :---: |
-| <img src="website_screenshots/events-ticket-booking-nine.vercel.app_movies.png" width="400"/> | <img src="website_screenshots/seat-selection.png" width="400"/> |
-| *Browsing the latest movies and events* | *Interactive, real-time theater seat mapping* |
-
-| Add-ons & Concessions | Digital Ticketing & Orders |
-| :---: | :---: |
-| <img src="website_screenshots/addons.png" width="400"/> | <img src="website_screenshots/events-ticket-booking-nine.vercel.app_profile_orders.png" width="400"/> |
-| *Food and beverage upselling during checkout* | *User profile showing confirmed tickets and QR codes* |
-
-### 🏢 The Organiser & Admin Hub
-
-| Organiser Dashboard | Admin Venue Management |
-| :---: | :---: |
-| <img src="website_screenshots/events-ticket-booking-nine.vercel.app_organiser.png" width="400"/> | <img src="website_screenshots/events-ticket-booking-nine.vercel.app_admin_venues.png" width="400"/> |
-| *Real-time analytics and revenue tracking* | *Superadmin control over platform-wide venues* |
-
-| Organiser Real-time Monitoring | Admin Screen Layouts |
-| :---: | :---: |
-| <img src="website_screenshots/seat-monitoring.png" width="400"/> | <img src="website_screenshots/venue-screens.png" width="400"/> |
-| *Real-time booking and seat monitoring* | *Managing screen dimensions and layout matrices* |
-
-</div>
-
-</details>
-
----
-
-## 🏗️ 1. System Architecture
+## 1. System Architecture
 
 The platform operates on a modernized **Next.js 15 App Router** architecture, leveraging React Server Components for highly optimized initial page loads (SEO-friendly) and Client Components for dynamic, real-time interactivity (Seat Map selection).
 
@@ -132,7 +80,7 @@ graph TD
 
 ---
 
-## 🗄️ 2. Database Schema Overview (ER Diagram)
+## 2. Database Schema Overview (ER Diagram)
 
 The database strictly enforces relational integrity within a NoSQL environment using Mongoose `ObjectIds` and `Populate` commands.
 
@@ -213,13 +161,72 @@ erDiagram
         Date offerExpiresAt
     }
 ```
+    USER {
+        ObjectId _id
+        String name
+        String email
+        String role "admin | organiser | user"
+    }
+
+    THEATER ||--o{ MOVIE : hosts
+    THEATER {
+        ObjectId _id
+        String name
+        String city
+        ObjectId organiserId
+    }
+
+    MOVIE ||--o{ SHOWTIME : has
+    MOVIE {
+        ObjectId _id
+        String title
+        String eventType "Movie | Event | Concert"
+        Object basePricing "Custom Ticket Tiers"
+    }
+
+    SHOWTIME ||--o{ SEAT : contains
+    SHOWTIME ||--o{ BOOKING : booked_for
+    SHOWTIME {
+        ObjectId _id
+        ObjectId movieId
+        ObjectId theaterId
+        Date date
+        String time
+    }
+
+    SEAT {
+        ObjectId _id
+        ObjectId showtimeId
+        String seatNumber
+        String status "AVAILABLE | HELD | BOOKED"
+        ObjectId heldBy
+        Date holdExpiresAt
+    }
+
+    BOOKING ||--o{ TICKET : generates
+    BOOKING {
+        ObjectId _id
+        ObjectId userId
+        ObjectId showtimeId
+        Number amount
+        String status "CONFIRMED | CANCELLED"
+    }
+
+    WAITLIST {
+        ObjectId _id
+        ObjectId showtimeId
+        ObjectId userId
+        String status "WAITING | OFFERED | EXPIRED | CONVERTED"
+        Date offerExpiresAt
+    }
+```
 
 ---
 
-## ⚡ 3. High-Concurrency & Atomic Engine
+## 3. High-Concurrency & Concurrency Explanation
 
 ### The Double-Booking Threat
-In high-demand ticketing scenarios (e.g., a massive Marvel movie release), it is common for thousands of users to view the exact same Seat Map simultaneously. If 100 users click on seat `A1` at the exact same millisecond, a standard dual-step database query (`find()` -> verify -> `save()`) creates a massive Race Condition, resulting in catastrophic double-booking.
+In high-demand ticketing scenarios (e.g., a massive Marvel movie release or a Taylor Swift concert), it is common for thousands of users to view the exact same Seat Map simultaneously. If 100 users click on seat `A1` at the exact same millisecond, a standard dual-step database query (`find()` -> verify -> `save()`) creates a massive Race Condition. Multiple users will successfully bypass the verification step before the database commits the first save, resulting in catastrophic double-booking.
 
 ### The Solution: MongoDB Atomic Operations
 We completely eliminate application-level race conditions by pushing the concurrency check directly to the database lock level using MongoDB's atomic `findOneAndUpdate` combined with strict conditional matching.
@@ -255,7 +262,7 @@ if (!seat) {
 
 ---
 
-## 🤖 4. Waitlist Auto-Assignment Flow
+## 4. Waitlist Auto-Assignment Flow
 
 ```mermaid
 sequenceDiagram
@@ -284,7 +291,10 @@ sequenceDiagram
     end
 ```
 
-### Waitlist Processing (Deep Dive)
+---
+
+### 4.1 Waitlist Implementation (Deep Dive)
+
 When a booking is cancelled, the system executes this atomic sequence to find the next waiting user:
 
 ```javascript
@@ -311,7 +321,7 @@ if (nextInLine) {
 
 ---
 
-## 🚀 5. Database Indexing & Performance
+## 5. Database Indexing & Performance 🚀
 
 To support high-concurrency read/writes during massive event drops, the MongoDB database relies on heavily optimized indexes:
 
@@ -332,7 +342,7 @@ SeatSchema.index(
 
 ---
 
-## 🔒 6. Security & Role-Based Access Control
+## 6. Security & Role-Based Access Control 🔒
 
 The platform employs strict API and Route-level guarding via Next.js Middleware and NextAuth JWTs.
 
@@ -351,11 +361,10 @@ export function middleware(request: NextRequest) {
 
 ---
 
-## 🛠️ 7. Setup & Local Development Guide
+## 7. Setup & Local Development Guide
 
 <details>
-<summary><strong>💻 Click to expand setup instructions</strong></summary>
-<br/>
+<summary><strong>🛠️ Click to expand setup instructions</strong></summary>
 
 ### Prerequisites
 - Node.js 18+
@@ -402,7 +411,7 @@ yarn dev
 
 ---
 
-## 📂 8. Project Structure (Monorepo)
+## 8. Project Structure (Monorepo)
 
 ```text
 ├── src/
@@ -422,7 +431,7 @@ yarn dev
 
 ---
 
-## 📡 9. API Design & Documentation
+## 9. API Design & Documentation
 
 - `POST /api/showtimes/[id]/hold-seats` - Validates seat availability and atomically applies a hold TTL.
 - `POST /api/showtimes/[id]/book` - Finalizes a payment session and converts HELD seats to BOOKED.
@@ -430,3 +439,36 @@ yarn dev
 - `POST /api/wishlist` - Synchronizes user event interest tracking.
 - `GET /api/organiser/stats` - Aggregates secure venue-level revenue analytics for the Organizer dashboard.
 
+---
+
+## 📸 10. Application Gallery
+
+Here's a visual walkthrough of the CineVerse experience, from discovery to checkout to management.
+
+<div align="center">
+
+### The Customer Experience
+
+| Homepage & Discovery | Dynamic Seat Selection |
+| :---: | :---: |
+| <img src="website_screenshots/events-ticket-booking-nine.vercel.app_movies.png" width="400"/> | <img src="website_screenshots/seat-selection.png" width="400"/> |
+| *Browsing the latest movies and events* | *Interactive, real-time theater seat mapping* |
+
+| Add-ons & Concessions | Digital Ticketing & Orders |
+| :---: | :---: |
+| <img src="website_screenshots/addons.png" width="400"/> | <img src="website_screenshots/events-ticket-booking-nine.vercel.app_profile_orders.png" width="400"/> |
+| *Food and beverage upselling during checkout* | *User profile showing confirmed tickets and QR codes* |
+
+### The Organiser & Admin Hub
+
+| Organiser Dashboard | Admin Venue Management |
+| :---: | :---: |
+| <img src="website_screenshots/events-ticket-booking-nine.vercel.app_organiser.png" width="400"/> | <img src="website_screenshots/events-ticket-booking-nine.vercel.app_admin_venues.png" width="400"/> |
+| *Real-time analytics and revenue tracking* | *Superadmin control over platform-wide venues* |
+
+| Organiser Real-time Monitoring | Admin Screen Layouts |
+| :---: | :---: |
+| <img src="website_screenshots/seat-monitoring.png" width="400"/> | <img src="website_screenshots/venue-screens.png" width="400"/> |
+| *Real-time booking and seat monitoring* | *Managing screen dimensions and layout matrices* |
+
+</div>
