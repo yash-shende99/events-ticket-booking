@@ -15,7 +15,7 @@ CineVerse is a highly scalable, multi-tenant ticketing platform built with Next.
 
 ## 🚀 Live Demo & Environments
 
-**Live Application URL:** [https://events-ticket-booking.vercel.app](https://events-ticket-booking.vercel.app) *(Update with your actual Vercel/Render URL)*
+**Live Application URL:** [https://events-ticket-booking-nine.vercel.app](https://events-ticket-booking-nine.vercel.app)
 
 To experience the full system architecture, use the following pre-configured demo accounts:
 
@@ -369,7 +369,7 @@ export function middleware(request: NextRequest) {
 ### Prerequisites
 - Node.js 18+
 - MongoDB instance (Atlas or local)
-- Google Cloud Console account (for OAuth)
+- Google Account (App Password required for Nodemailer)
 
 ### Environment Variables (`.env.local`)
 Create a `.env.local` file in the root directory:
@@ -377,10 +377,6 @@ Create a `.env.local` file in the root directory:
 MONGODB_URI=mongodb+srv://<user>:<password>@cluster...
 NEXTAUTH_SECRET=generate_a_random_secure_string
 NEXTAUTH_URL=http://localhost:3000
-
-# Google OAuth
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
 
 # Email Service (for QR & Waitlist)
 EMAIL_SERVER_USER=your_email@gmail.com
