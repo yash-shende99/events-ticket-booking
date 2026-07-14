@@ -13,9 +13,9 @@
 
 <br/>
 
-CineVerse is a modern, all-in-one ticketing and event management platform inspired by industry leaders like BookMyShow and Ticketmaster. 
-
-Whether you're a **moviegoer** booking your favorite seats, an **event organizer** tracking real-time sales, or a **system admin** managing the entire network, CineVerse seamlessly connects everyone in one powerful, easy-to-use ecosystem. Under the hood, it is engineered with cutting-edge technologies (Next.js 15, MongoDB, TailwindCSS) to effortlessly handle high-traffic ticket drops without breaking a sweat.
+<div align="justify">
+  CineVerse is a modern, highly scalable ticketing and event management ecosystem inspired by industry leaders like BookMyShow. Engineered to solve complex distributed systems challenges like high-concurrency seat locking and automated waitlist routing, it seamlessly connects <strong>moviegoers</strong>, <strong>event organizers</strong>, and <strong>system administrators</strong> in one unified platform. Built on cutting-edge technologies (Next.js 15, MongoDB, Tailwind CSS), CineVerse is designed to effortlessly handle massive, high-traffic ticket drops while delivering a flawless, lightning-fast user experience.
+</div>
 
 ## 🚀 Live Demo & Environments
 
