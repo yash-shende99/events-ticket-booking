@@ -44,41 +44,128 @@ To experience the full system architecture, use the following pre-configured dem
 
 ## 1. System Architecture
 
+The platform operates on a modernized **Next.js 15 App Router** architecture, leveraging React Server Components for highly optimized initial page loads (SEO-friendly) and Client Components for dynamic, real-time interactivity (Seat Map selection).
+
 ```mermaid
 graph TD
+    %% Core Infrastructure
     Client[Client Browser / Mobile App]
-    API[Next.js API Routes]
-    DB[(MongoDB)]
+    CDN[Vercel Edge Network / CDN]
+    Next[Next.js 15 Serverless Environment]
+    DB[(MongoDB Atlas Cluster)]
     
-    subgraph Frontend [Next.js App Router]
-        Admin[Admin Headquarters]
-        Org[Theatre & Venue Portal]
-        Cust[Customer Discovery & Booking]
+    %% External Services
+    Google[Google OAuth Provider]
+    Stripe[Stripe / Razorpay Sandbox]
+    Email[NodeMailer / Resend SMTP]
+
+    %% Flow
+    Client -->|HTTPS Requests| CDN
+    CDN -->|Server Actions / API| Next
+    Next <-->|Mongoose ODM| DB
+    Next <-->|Auth Tokens| Google
+    Next -->|Payment Intent| Stripe
+    Next -->|Waitlist/Ticket Emails| Email
+    
+    subgraph Core Backend Engines
+        SeatHold[Atomic Seat Hold Engine]
+        Waitlist[Waitlist Auto-Assigner Daemon]
+        QR[Cryptographic QR Validation]
     end
     
-    Client <--> Frontend
-    Frontend <--> API
-    API <--> DB
-    
-    subgraph Core Engines
-        SeatHold[Concurrency Seat Hold Engine]
-        Waitlist[Waitlist Auto-Assigner]
-        QR[QR Validation System]
-    end
-    
-    API --- SeatHold
-    API --- Waitlist
-    API --- QR
+    Next --- SeatHold
+    Next --- Waitlist
+    Next --- QR
 ```
+
+### Key Architectural Decisions:
+- **Serverless API Routes:** Backend logic is deployed as stateless, horizontally scalable Serverless Functions on Vercel.
+- **Optimistic UI Updates:** The React frontend utilizes optimistic state rendering to ensure the seat map feels instantaneous, verifying state asynchronously in the background.
+- **Tripartite Authorization:** Middleware heavily protects `/admin/*` and `/organiser/*` routes, enforcing strict JWT claims to ensure tenant isolation.
 
 ---
 
 ## 2. Database Schema Overview (ER Diagram)
 
+The database strictly enforces relational integrity within a NoSQL environment using Mongoose `ObjectIds` and `Populate` commands.
+
 ```mermaid
 erDiagram
     USER ||--o{ BOOKING : makes
     USER ||--o{ WAITLIST : joins
+    USER {
+        ObjectId _id PK
+        String name
+        String email
+        String role "admin | organiser | user"
+        Array wishlistedMovies
+        Array wishlistedEvents
+    }
+
+    USER ||--o{ VENUE_REQUEST : submits
+    VENUE_REQUEST {
+        ObjectId _id PK
+        ObjectId organiserId FK
+        String theaterName
+        String city
+        String status "PENDING | APPROVED | REJECTED"
+    }
+
+    THEATER ||--o{ SHOWTIME : hosts
+    THEATER {
+        ObjectId _id PK
+        String name
+        String city
+        ObjectId organiserId FK
+    }
+
+    MOVIE ||--o{ SHOWTIME : has
+    MOVIE {
+        ObjectId _id PK
+        String title
+        String eventType "Movie | Event | Concert"
+        Object basePricing "Custom Ticket Tiers"
+        String trailerUrl
+    }
+
+    SHOWTIME ||--o{ SEAT : contains
+    SHOWTIME ||--o{ BOOKING : booked_for
+    SHOWTIME {
+        ObjectId _id PK
+        ObjectId movieId FK
+        ObjectId theaterId FK
+        Date date
+        String time
+    }
+
+    SEAT {
+        ObjectId _id PK
+        ObjectId showtimeId FK
+        String seatNumber
+        String status "AVAILABLE | HELD | BOOKED"
+        ObjectId heldBy FK
+        Date holdExpiresAt
+    }
+
+    BOOKING ||--o{ TICKET : generates
+    BOOKING {
+        ObjectId _id PK
+        ObjectId userId FK
+        ObjectId showtimeId FK
+        Array seats
+        Number totalPrice
+        String status "CONFIRMED | CANCELLED"
+        String qrCodeUrl
+    }
+
+    WAITLIST {
+        ObjectId _id PK
+        ObjectId showtimeId FK
+        ObjectId userId FK
+        String status "WAITING | OFFERED | EXPIRED | CONVERTED"
+        Date offerExpiresAt
+    }
+```
     USER {
         ObjectId _id
         String name
@@ -141,34 +228,42 @@ erDiagram
 
 ---
 
-## 3. High-Concurrency Concurrency Explanation
+## 3. High-Concurrency & Concurrency Explanation
 
-### The Double-Booking Problem
-If 100 users try to book seat "A1" at the exact same millisecond, a standard `find` and `update` query will result in multiple users successfully claiming the seat, leading to catastrophic double-booking.
+### The Double-Booking Threat
+In high-demand ticketing scenarios (e.g., a massive Marvel movie release or a Taylor Swift concert), it is common for thousands of users to view the exact same Seat Map simultaneously. If 100 users click on seat `A1` at the exact same millisecond, a standard dual-step database query (`find()` -> verify -> `save()`) creates a massive Race Condition. Multiple users will successfully bypass the verification step before the database commits the first save, resulting in catastrophic double-booking.
 
-### Our Solution (Atomic Updates)
-We rely on MongoDB's atomic `findOneAndUpdate` combined with strict query conditions to guarantee absolute concurrency safety.
+### The Solution: MongoDB Atomic Operations
+We completely eliminate application-level race conditions by pushing the concurrency check directly to the database lock level using MongoDB's atomic `findOneAndUpdate` combined with strict conditional matching.
 
-**The Query Logic:**
+**The Execution Logic:**
 ```javascript
+// Serverless API Action (/hold-seats)
 const seat = await Seat.findOneAndUpdate(
   {
-    _id: seatId,
-    showtimeId: showtimeId,
-    status: "AVAILABLE", // CRITICAL: Only match if strictly available
+    _id: requestedSeatId,
+    showtimeId: currentShowtimeId,
+    status: "AVAILABLE", // CRITICAL: Strict exact-match condition
   },
   {
     $set: {
       status: "HELD",
-      heldBy: userId,
-      holdExpiresAt: new Date(Date.now() + 10 * 60 * 1000) // 10 Min TTL
+      heldBy: currentUserId,
+      holdExpiresAt: new Date(Date.now() + 10 * 60 * 1000) // Exactly 10 Minute TTL
     }
   },
-  { new: true }
+  { new: true } // Return updated document if successful
 );
+
+if (!seat) {
+    throw new Error("Seat already taken or held by another user.");
+}
 ```
 
-Because MongoDB guarantees atomicity at the document level, if 100 threads hit this query simultaneously, only the *first* thread will find a document where `status === "AVAILABLE"`. The remaining 99 threads will return `null` and instantly fail the booking flow, completely eliminating race conditions.
+### How the Engine Works:
+1. **Atomic Exclusivity:** MongoDB applies a document-level lock during `findOneAndUpdate`. If 100 threads execute this query simultaneously, the first thread locks the document, verifies `status: "AVAILABLE"`, and updates it to `HELD`. 
+2. **Instant Rejection:** By the time the lock releases for the remaining 99 threads, the `status` is no longer `"AVAILABLE"`. The query condition fails, returning `null`, and the backend safely throws a "Seat Unavailable" exception. No double-bookings ever occur.
+3. **Time-To-Live (TTL) Auto-Release:** Once a seat is marked as `HELD`, the user is granted exactly 10 minutes to complete the checkout/payment flow. The database relies on `holdExpiresAt`. If a user abandons the checkout, a background cleanup daemon (or dynamic read-time evaluator) seamlessly releases the seat back to the pool, triggering live UI updates for other customers.
 
 ---
 
