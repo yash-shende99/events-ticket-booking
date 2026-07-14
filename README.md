@@ -388,11 +388,3 @@ yarn dev
 ### Organizer Dashboard (Revenue Analytics)
 ![Organizer Dashboard](https://via.placeholder.com/800x400?text=Organizer+Revenue+Dashboard+Screenshot)
 ![Booking Management](https://via.placeholder.com/800x400?text=Booking+Management+Table+Screenshot)
-
-
-## 👨‍💻 10. Author / Contact
-
-**Yash Shende**
-- **Email:** yashshende9999@gmail.com
-- **LinkedIn:** [Insert your LinkedIn URL here]
-- **GitHub:** [https://github.com/yash-shende99](https://github.com/yash-shende99)
