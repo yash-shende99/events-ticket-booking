@@ -5,7 +5,7 @@ import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, PieChart, Pie, Cell, BarChart, Bar, Legend
 } from "recharts";
 import { 
-  TrendingUp, Users, Ticket, Film, Calendar, DollarSign, Percent, Clock
+  TrendingUp, Users, Ticket, Film, Calendar, DollarSign, Percent, Clock, QrCode, Megaphone, Settings
 } from "lucide-react";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
@@ -37,9 +37,15 @@ export default function OrganiserDashboard() {
     try {
       const res = await fetch("/api/organiser/stats");
       const data = await res.json();
-      setStats(data);
+      if (!res.ok || data.error) {
+        console.error("Failed to fetch stats:", data.error);
+        setStats(null);
+      } else {
+        setStats(data);
+      }
     } catch (err) {
       console.error(err);
+      setStats(null);
     } finally {
       setIsLoading(false);
     }
@@ -56,7 +62,20 @@ export default function OrganiserDashboard() {
     );
   }
 
-  if (!stats) return null;
+  if (!stats) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center p-8 bg-white rounded-2xl shadow-sm border border-red-100 max-w-md">
+          <div className="w-16 h-16 bg-red-50 text-red-500 rounded-full flex items-center justify-center mx-auto mb-4">
+            <span className="text-2xl">⚠️</span>
+          </div>
+          <h2 className="text-xl font-bold text-gray-900 mb-2">Failed to load Dashboard</h2>
+          <p className="text-gray-500 mb-6">We temporarily lost connection to the database. Please try refreshing the page in a few moments.</p>
+          <button onClick={() => window.location.reload()} className="px-6 py-2 bg-[#f84464] text-white rounded-lg font-medium">Refresh Page</button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 pb-12">
@@ -76,7 +95,21 @@ export default function OrganiserDashboard() {
           </div>
         </div>
         <div className="flex items-center gap-4">
-          <Link href="/organiser/create-event" className="text-sm font-medium text-white hover:bg-[#e03a58] bg-[#f84464] px-4 py-2 rounded-lg transition">
+          <div className="flex items-center gap-2 border-r border-gray-200 pr-4 mr-2">
+            <Link href="/organiser/staff" title="Staff Management" className="p-2 text-gray-500 hover:text-[#f84464] hover:bg-rose-50 rounded-lg transition">
+              <Users className="w-5 h-5" />
+            </Link>
+            <Link href="/organiser/marketing" title="Marketing & Promos" className="p-2 text-gray-500 hover:text-[#f84464] hover:bg-rose-50 rounded-lg transition">
+              <Megaphone className="w-5 h-5" />
+            </Link>
+            <Link href="/organiser/settings" title="Venue Settings" className="p-2 text-gray-500 hover:text-[#f84464] hover:bg-rose-50 rounded-lg transition">
+              <Settings className="w-5 h-5" />
+            </Link>
+          </div>
+          <Link href="/organiser/validation" className="text-sm font-bold text-gray-700 hover:text-[#f84464] border-2 border-gray-200 hover:border-[#f84464] bg-white px-4 py-2 rounded-lg transition flex items-center gap-2">
+            <QrCode className="w-4 h-4" /> QR Validation
+          </Link>
+          <Link href="/organiser/create-event" className="text-sm font-bold text-white hover:bg-[#e03a58] bg-[#f84464] px-4 py-2 rounded-lg transition shadow-sm">
             + Create Listing
           </Link>
           <UserMenuClient isAuthenticated={true} userName={session?.user?.name} />
@@ -97,15 +130,15 @@ export default function OrganiserDashboard() {
             </div>
           </div>
           
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+          <Link href="/organiser/bookings" className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md hover:border-[#f84464]/30 transition-all cursor-pointer group block">
             <div>
-              <p className="text-sm font-medium text-gray-500">Tickets Sold</p>
+              <p className="text-sm font-medium text-gray-500 group-hover:text-[#f84464] transition-colors">Tickets Sold</p>
               <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.ticketsSold.toLocaleString()}</h3>
             </div>
             <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
               <Ticket className="w-6 h-6" />
             </div>
-          </div>
+          </Link>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
             <div>
@@ -127,35 +160,35 @@ export default function OrganiserDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+          <Link href="/organiser/events" className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md hover:border-[#f84464]/30 transition-all cursor-pointer group block">
             <div>
-              <p className="text-sm font-medium text-gray-500">Total Events listed</p>
+              <p className="text-sm font-medium text-gray-500 group-hover:text-[#f84464] transition-colors">Total Events listed</p>
               <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.totalEvents}</h3>
             </div>
             <div className="w-12 h-12 rounded-full bg-rose-100 flex items-center justify-center text-[#f84464]">
               <Film className="w-6 h-6" />
             </div>
-          </div>
+          </Link>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+          <Link href="/organiser/showtimes" className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md hover:border-[#f84464]/30 transition-all cursor-pointer group block">
             <div>
-              <p className="text-sm font-medium text-gray-500">Upcoming Showtimes</p>
+              <p className="text-sm font-medium text-gray-500 group-hover:text-[#f84464] transition-colors">Upcoming Showtimes</p>
               <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.upcomingEvents}</h3>
             </div>
             <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-teal-600">
               <Calendar className="w-6 h-6" />
             </div>
-          </div>
+          </Link>
 
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between">
+          <Link href="/organiser/waitlist" className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 flex items-center justify-between hover:shadow-md hover:border-[#f84464]/30 transition-all cursor-pointer group block">
             <div>
-              <p className="text-sm font-medium text-gray-500">Pending Waitlists</p>
+              <p className="text-sm font-medium text-gray-500 group-hover:text-[#f84464] transition-colors">Pending Waitlists</p>
               <h3 className="text-2xl font-bold text-gray-900 mt-1">{stats.pendingWaitlist}</h3>
             </div>
             <div className="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600">
               <Clock className="w-6 h-6" />
             </div>
-          </div>
+          </Link>
         </div>
 
         {/* Charts Section */}
