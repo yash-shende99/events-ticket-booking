@@ -1,6 +1,8 @@
 <div align="center">
   <h1>🍿 CineVerse</h1>
-  <p><strong>Advanced Ticketing & Event Management Platform</strong></p>
+  <p><strong>Next-Generation Ticketing & Event Management Ecosystem</strong></p>
+  
+  [![Live Demo](https://img.shields.io/badge/Live_Demo-Access_Now-FF4154?style=for-the-badge&logo=vercel)](https://events-ticket-booking-nine.vercel.app)
   
   ![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
   ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
@@ -15,19 +17,15 @@ CineVerse is a highly scalable, multi-tenant ticketing platform built with Next.
 
 ## 🚀 Live Demo & Environments
 
-**Live Application URL:** [https://events-ticket-booking-nine.vercel.app](https://events-ticket-booking-nine.vercel.app)
+🌍 **Launch Application:** [events-ticket-booking-nine.vercel.app](https://events-ticket-booking-nine.vercel.app)
 
 To experience the full system architecture, use the following pre-configured demo accounts:
 
-1. **Admin / Superuser** (Full system control)
-   - Email: `yashshende9999@gmail.com`
-   - Password: `123456`
-2. **Organizer** (Pre-loaded with 26 Movies & Events, Revenue Dashboards)
-   - Email: `yash.22310893@viit.ac.in`
-   - Password: `123456`
-3. **Customer / User** (Booking flow, waitlists, checkout)
-   - Email: `hvdpvd4@gmail.com`
-   - Password: `123456`
+| Role | Email | Password | What You Can Do |
+| :--- | :--- | :--- | :--- |
+| 🛡️ **SuperAdmin** | `yashshende9999@gmail.com` | `123456` | Approve venues, monitor platform-wide analytics, manage global user base. |
+| 🎭 **Organizer** | `yash.22310893@viit.ac.in` | `123456` | Track real-time seat monitoring, view revenue dashboards, manage 26+ pre-loaded events. |
+| 👤 **Customer** | `hvdpvd4@gmail.com` | `123456` | Experience the booking flow, interactive seat map, add-ons, waitlists, and checkout. |
 
 ## ✨ Key Technical Achievements
 
