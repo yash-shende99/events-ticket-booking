@@ -29,6 +29,8 @@ export default function SeatLayoutPage({
   const [bookedSeats, setBookedSeats] = useState<string[]>([]);
   const [heldSeats, setHeldSeats] = useState<string[]>([]);
   const [isHolding, setIsHolding] = useState(false);
+  const [layout, setLayout] = useState<string[][]>([]);
+  const [categories, setCategories] = useState<any[]>([]);
 
   // Fetch seat status
   const fetchSeatStatus = async () => {
@@ -38,6 +40,8 @@ export default function SeatLayoutPage({
       if (data.success) {
         setBookedSeats(data.bookedSeats || []);
         setHeldSeats(data.heldSeats || []);
+        if (data.layout) setLayout(data.layout);
+        if (data.categories) setCategories(data.categories);
       }
     } catch (error) {
       console.error("Failed to fetch seat status", error);
@@ -148,6 +152,8 @@ export default function SeatLayoutPage({
           selectedSeats={selectedSeats.map(s => s.id)}
           bookedSeats={bookedSeats}
           heldSeats={heldSeats}
+          layout={layout}
+          categories={categories}
           onSeatSelect={handleSeatSelect}
         />
       </main>

@@ -13,9 +13,8 @@ export default function SubNavbar() {
         {/* Right Links */}
         <div className="flex items-center gap-6 text-xs">
           <Link href="/" className="hover:text-gray-900 transition">ListYourShow</Link>
-          <Link href="/" className="hover:text-gray-900 transition">Corporates</Link>
+          <Link href="/corporates" className="hover:text-gray-900 transition">Corporates</Link>
           <Link href="/" className="hover:text-gray-900 transition">Offers</Link>
-          <Link href="/" className="hover:text-gray-900 transition">Gift Cards</Link>
         </div>
       </div>
     </nav>

@@ -16,7 +16,7 @@ export async function POST(req: Request) {
     const userId = session?.user?.id || "000000000000000000000000";
 
     const body = await req.json();
-    const { movieId, showtimeId, seats, time, totalPrice, razorpay_payment_id, razorpay_order_id, razorpay_signature } = body;
+    const { movieId, showtimeId, seats, time, totalPrice, razorpay_payment_id, razorpay_order_id, razorpay_signature, claimToken } = body;
 
     if (!movieId || !seats || !razorpay_payment_id || !razorpay_order_id || !razorpay_signature) {
       return NextResponse.json({ error: "Missing fields or payment details" }, { status: 400 });

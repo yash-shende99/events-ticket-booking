@@ -7,7 +7,8 @@ export interface ITicket extends Document {
   bookingId: string;
   seats: string[];
   totalPrice: number;
-  status: "CONFIRMED" | "CANCELLED" | "PENDING";
+  status: "CONFIRMED" | "CANCELLED" | "PENDING" | "USED" | "EXPIRED";
+  refundStatus: "NONE" | "PENDING" | "PROCESSED" | "FAILED";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,8 +23,13 @@ const TicketSchema: Schema = new Schema(
     totalPrice: { type: Number, required: true },
     status: {
       type: String,
-      enum: ["CONFIRMED", "CANCELLED", "PENDING"],
+      enum: ["CONFIRMED", "CANCELLED", "PENDING", "USED", "EXPIRED"],
       default: "PENDING",
+    },
+    refundStatus: {
+      type: String,
+      enum: ["NONE", "PENDING", "PROCESSED", "FAILED"],
+      default: "NONE",
     },
   },
   {

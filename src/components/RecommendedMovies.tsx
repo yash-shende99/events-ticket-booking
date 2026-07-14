@@ -5,9 +5,16 @@ import { ChevronRight } from "lucide-react";
 import { Movie } from "@/models/Movie";
 import connectDB from "@/lib/db";
 
+import { CMS } from "@/models/CMS";
+
 export default async function RecommendedMovies() {
   await connectDB();
-  const movies = await Movie.find({}).sort({ _id: -1 }).lean();
+  const cms = await CMS.findOne().populate("featuredMovies").lean();
+  let movies = cms?.featuredMovies || [];
+
+  if (movies.length === 0) {
+    movies = await Movie.find({}).sort({ _id: -1 }).limit(10).lean();
+  }
 
   return (
     <div className="w-full max-w-7xl mx-auto px-4 lg:px-8 py-10">

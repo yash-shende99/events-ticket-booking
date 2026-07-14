@@ -4,14 +4,27 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import toast from "react-hot-toast";
-import { signIn } from "next-auth/react";
+import { signIn, useSession } from "next-auth/react";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const { data: session, status } = useSession();
+
+  useEffect(() => {
+    if (status === "authenticated" && session?.user) {
+      if ((session.user as any).role === "admin") {
+        router.push("/admin");
+      } else if ((session.user as any).role === "organiser") {
+        router.push("/organiser");
+      } else {
+        router.push("/");
+      }
+    }
+  }, [status, session, router]);
 
   const [formData, setFormData] = useState({
     email: "",

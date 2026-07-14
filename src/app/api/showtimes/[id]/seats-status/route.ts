@@ -3,6 +3,7 @@ import connectDB from "@/lib/db";
 import { SeatHold } from "@/models/SeatHold";
 import { Ticket } from "@/models/Ticket";
 import { Showtime } from "@/models/Showtime";
+import { Theater } from "@/models/Theater";
 
 export const dynamic = "force-dynamic";
 
@@ -83,12 +84,28 @@ export async function GET(
     // Combine real and dummy, filtering out duplicates just in case
     const bookedSeats = Array.from(new Set([...realBookedSeats, ...dummyBookedSeats]));
 
+    // Fetch the Theater to get the layout
+    let layout = null;
+    let categories = null;
+
+    if (showtime && showtime.theater) {
+      const theater = await Theater.findById(showtime.theater).lean();
+      if (theater && theater.screens) {
+        const screen = theater.screens.find((s: any) => s._id.toString() === showtime.screen || s.name === showtime.screen);
+        if (screen) {
+          layout = screen.layout;
+          categories = screen.categories;
+        }
+      }
+    }
+
     return NextResponse.json({
       success: true,
       bookedSeats,
-      heldSeats
+      heldSeats,
+      layout,
+      categories
     });
-
   } catch (error) {
     console.error("Error fetching seat status:", error);
     return NextResponse.json({ error: "Failed to fetch seat status" }, { status: 500 });

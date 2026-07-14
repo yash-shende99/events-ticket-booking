@@ -23,7 +23,11 @@ const ShowtimeSchema = new mongoose.Schema(
     pricing: {
       premium: { type: Number, default: 500 },
       standard: { type: Number, default: 300 },
-      economy: { type: Number, default: 150 }
+      economy: { type: Number, default: 150 },
+      platinum: { type: Number, default: 800 },
+      gold: { type: Number, default: 600 },
+      silver: { type: Number, default: 400 },
+      recliner: { type: Number, default: 1000 }
     },
     dynamicPricing: {
       isWeekendPricing: { type: Boolean, default: false },

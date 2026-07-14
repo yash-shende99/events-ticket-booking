@@ -8,7 +8,11 @@ const ScreenSchema = new mongoose.Schema({
       name: { type: String, required: true }, // e.g., "Premium", "Standard"
       priceMultiplier: { type: Number, default: 1 } // For future pricing logic
     }
-  ]
+  ],
+  layout: {
+    type: mongoose.Schema.Types.Mixed,
+    default: []
+  }
 });
 
 const TheaterSchema = new mongoose.Schema(

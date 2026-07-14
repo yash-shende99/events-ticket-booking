@@ -18,6 +18,7 @@ export interface IUser extends Document {
   privacySettings?: { marketing: boolean };
   wishlistedMovies: mongoose.Types.ObjectId[];
   wishlistedEvents: mongoose.Types.ObjectId[];
+  accountStatus: "ACTIVE" | "SUSPENDED" | "BANNED";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -43,6 +44,11 @@ const UserSchema: Schema = new Schema(
     },
     wishlistedMovies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
     wishlistedEvents: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Event' }],
+    accountStatus: {
+      type: String,
+      enum: ["ACTIVE", "SUSPENDED", "BANNED"],
+      default: "ACTIVE"
+    }
   },
   {
     timestamps: true,

@@ -14,15 +14,15 @@ export default function LayoutWrapper({ navbar, subNavbar, footer, children }: L
   const isOrganiserRoute = pathname?.startsWith("/organiser");
   const isAdminRoute = pathname?.startsWith("/admin");
   const hideGlobalNav = isOrganiserRoute || isAdminRoute;
+  const hideSubNav = isOrganiserRoute || isAdminRoute;
 
   return (
     <>
       {!hideGlobalNav && navbar}
-      {!hideGlobalNav && subNavbar}
+      {!hideSubNav && subNavbar}
       
       {children}
-      
-      {!isOrganiserRoute && footer}
+      {!isOrganiserRoute && !isAdminRoute && footer}
     </>
   );
 }

@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { signOut } from "next-auth/react";
-import { UserCircle, Menu, ChevronRight, Bell, ShoppingBag, Heart, MessageCircle, Settings, LogOut, X, Info, TrendingUp, Film, PlusCircle, Calendar } from "lucide-react";
+import { UserCircle, Menu, ChevronRight, Bell, ShoppingBag, Heart, MessageCircle, Settings, LogOut, X, Info, TrendingUp, Film, PlusCircle, Calendar, Building2, Map, Ticket, Users, Clock3 } from "lucide-react";
 
 interface UserMenuClientProps {
   isAuthenticated: boolean;
@@ -79,6 +79,36 @@ export default function UserMenuClient({ isAuthenticated, userName }: UserMenuCl
       subtitle: "Publish a new event or movie",
       icon: <PlusCircle className="w-5 h-5 text-gray-500" />,
       href: "/organiser/create-event"
+    },
+    {
+      title: "Venue Requests",
+      subtitle: "Request screens for your movies",
+      icon: <Building2 className="w-5 h-5 text-gray-500" />,
+      href: "/organiser/venue-requests"
+    },
+    {
+      title: "Seat Monitoring",
+      subtitle: "View real-time showtime occupancy",
+      icon: <Map className="w-5 h-5 text-gray-500" />,
+      href: "/organiser/seat-monitoring"
+    },
+    {
+      title: "Bookings",
+      subtitle: "View real-time ticket sales",
+      icon: <Ticket className="w-5 h-5 text-gray-500" />,
+      href: "/organiser/bookings"
+    },
+    {
+      title: "Customers",
+      subtitle: "View customer analytics",
+      icon: <Users className="w-5 h-5 text-gray-500" />,
+      href: "/organiser/customers"
+    },
+    {
+      title: "Waitlist",
+      subtitle: "View premium waitlist queue",
+      icon: <Clock3 className="w-5 h-5 text-gray-500" />,
+      href: "/organiser/waitlist"
     },
     {
       title: "Settings",
