@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { Calendar as CalendarIcon, Clock, MapPin, DollarSign, CheckCircle2, ChevronRight, X, Plus, Shield } from "lucide-react";
+import { Calendar as CalendarIcon, Clock, MapPin, IndianRupee, CheckCircle2, ChevronRight, X, Plus, Shield } from "lucide-react";
 import { useSession } from "next-auth/react";
 
 export default function AdminScheduleEnginePage() {
@@ -23,7 +23,7 @@ export default function AdminScheduleEnginePage() {
     screen: "Hall 1",
     capacity: 100,
     date: "",
-    pricing: { premium: 500, standard: 300, economy: 150 },
+    pricing: { premium: 800, standard: 450, economy: 250, platinum: 1000, gold: 600, silver: 350, recliner: 1200 },
     dynamicPricing: {
       isWeekendPricing: false,
       isFestivalPricing: false,
@@ -41,14 +41,57 @@ export default function AdminScheduleEnginePage() {
     }
 
     if (status === "authenticated" && session?.user?.role === "admin") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const preMovieId = searchParams.get("movieId");
+      const preVenueId = searchParams.get("venueId");
+      const preScreenId = searchParams.get("screenId");
+
       Promise.all([
         fetch("/api/admin/events").then(res => res.json()),
         fetch("/api/theaters").then(res => res.json())
       ]).then(([eventsData, theatersData]) => {
         setEvents(Array.isArray(eventsData) ? eventsData : []);
         setTheaters(Array.isArray(theatersData) ? theatersData : []);
-        if (eventsData.length > 0) setFormData(prev => ({ ...prev, eventId: eventsData[0]._id }));
-        if (theatersData.length > 0) setFormData(prev => ({ ...prev, theaterId: theatersData[0]._id }));
+        
+        let initialEventId = eventsData.length > 0 ? eventsData[0]._id : "";
+        if (preMovieId && eventsData.some((e: any) => e._id === preMovieId)) {
+          initialEventId = preMovieId;
+        }
+
+        let initialTheaterId = theatersData.length > 0 ? theatersData[0]._id : "";
+        if (preVenueId && theatersData.some((t: any) => t._id === preVenueId)) {
+          initialTheaterId = preVenueId;
+        }
+
+        let initialScreenName = "";
+        let initialCapacity = 100;
+
+        if (initialTheaterId) {
+           const t = theatersData.find((t: any) => t._id === initialTheaterId);
+           if (t?.screens && t.screens.length > 0) {
+              if (preScreenId && preScreenId !== "Any") {
+                 const scr = t.screens.find((s: any) => s._id === preScreenId);
+                 if (scr) {
+                    initialScreenName = scr.name;
+                    initialCapacity = scr.capacity || 100;
+                 } else {
+                    initialScreenName = t.screens[0].name;
+                    initialCapacity = t.screens[0].capacity || 100;
+                 }
+              } else {
+                 initialScreenName = t.screens[0].name;
+                 initialCapacity = t.screens[0].capacity || 100;
+              }
+           }
+        }
+
+        setFormData(prev => ({ 
+          ...prev, 
+          eventId: initialEventId,
+          theaterId: initialTheaterId,
+          screen: initialScreenName,
+          capacity: initialCapacity
+        }));
       }).finally(() => {
         setFetchingData(false);
       });
@@ -183,12 +226,36 @@ export default function AdminScheduleEnginePage() {
                       
                       <div>
                         <label className="block text-sm font-medium text-gray-700 mb-1">Assign Screen / Hall</label>
-                        <input required type="text" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.screen} onChange={e => setFormData({...formData, screen: e.target.value})} placeholder="e.g. Hall 1, IMAX 3D, Main Stage" />
+                        {theaters.find(t => t._id === formData.theaterId)?.screens?.length > 0 ? (
+                          <select 
+                            required 
+                            className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" 
+                            value={formData.screen} 
+                            onChange={e => {
+                              const screenName = e.target.value;
+                              const t = theaters.find(t => t._id === formData.theaterId);
+                              const s = t?.screens?.find((scr: any) => scr.name === screenName);
+                              setFormData({...formData, screen: screenName, capacity: s?.capacity || 100});
+                            }}
+                          >
+                            <option value="">Select a screen...</option>
+                            {theaters.find(t => t._id === formData.theaterId)?.screens?.map((s: any) => (
+                              <option key={s._id} value={s.name}>{s.name} ({s.capacity} seats)</option>
+                            ))}
+                          </select>
+                        ) : (
+                          <div className="w-full border border-red-200 bg-red-50 text-red-600 rounded-lg px-4 py-2 text-sm font-medium">
+                            No screens configured for this theater.
+                          </div>
+                        )}
                       </div>
 
                       <div className="md:col-span-2">
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Max Seat Capacity (Hard Cap)</label>
-                        <input required type="number" min="1" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.capacity} onChange={e => setFormData({...formData, capacity: Number(e.target.value)})} />
+                        <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
+                          Max Seat Capacity (Hard Cap) 
+                          <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Auto-filled from screen layout</span>
+                        </label>
+                        <input required type="number" min="1" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none bg-gray-50" value={formData.capacity} onChange={e => setFormData({...formData, capacity: Number(e.target.value)})} />
                       </div>
                     </div>
                   )}
@@ -229,20 +296,36 @@ export default function AdminScheduleEnginePage() {
               {/* STEP 3: PRICING */}
               {step === 3 && (
                 <div className="space-y-8 animate-fadeIn">
-                  <h3 className="text-xl font-bold border-b pb-2 flex items-center gap-2"><DollarSign className="w-5 h-5 text-[#f84464]" /> Pricing Engine</h3>
+                  <h3 className="text-xl font-bold border-b pb-2 flex items-center gap-2"><IndianRupee className="w-5 h-5 text-[#f84464]" /> Pricing Engine</h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
                     <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
-                      <label className="block text-sm font-bold text-amber-900 mb-2">Premium Category (₹)</label>
-                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 outline-none" value={formData.pricing.premium} onChange={e => setFormData({...formData, pricing: {...formData.pricing, premium: Number(e.target.value)}})} />
+                      <label className="block text-sm font-bold text-amber-900 mb-2">Premium (₹)</label>
+                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 outline-none bg-white text-gray-900" value={formData.pricing.premium} onChange={e => setFormData({...formData, pricing: {...formData.pricing, premium: Number(e.target.value)}})} />
                     </div>
                     <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                      <label className="block text-sm font-bold text-slate-900 mb-2">Standard Category (₹)</label>
-                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none" value={formData.pricing.standard} onChange={e => setFormData({...formData, pricing: {...formData.pricing, standard: Number(e.target.value)}})} />
+                      <label className="block text-sm font-bold text-slate-900 mb-2">Standard (₹)</label>
+                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none bg-white text-gray-900" value={formData.pricing.standard} onChange={e => setFormData({...formData, pricing: {...formData.pricing, standard: Number(e.target.value)}})} />
                     </div>
                     <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
-                      <label className="block text-sm font-bold text-emerald-900 mb-2">Economy Category (₹)</label>
-                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none" value={formData.pricing.economy} onChange={e => setFormData({...formData, pricing: {...formData.pricing, economy: Number(e.target.value)}})} />
+                      <label className="block text-sm font-bold text-emerald-900 mb-2">Economy (₹)</label>
+                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-gray-900" value={formData.pricing.economy} onChange={e => setFormData({...formData, pricing: {...formData.pricing, economy: Number(e.target.value)}})} />
+                    </div>
+                    <div className="bg-slate-800 p-4 rounded-xl border border-slate-900">
+                      <label className="block text-sm font-bold text-white mb-2">Platinum (₹)</label>
+                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-400 outline-none bg-white text-gray-900" value={formData.pricing.platinum} onChange={e => setFormData({...formData, pricing: {...formData.pricing, platinum: Number(e.target.value)}})} />
+                    </div>
+                    <div className="bg-yellow-100 p-4 rounded-xl border border-yellow-300">
+                      <label className="block text-sm font-bold text-yellow-900 mb-2">Gold (₹)</label>
+                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-500 outline-none bg-white text-gray-900" value={formData.pricing.gold} onChange={e => setFormData({...formData, pricing: {...formData.pricing, gold: Number(e.target.value)}})} />
+                    </div>
+                    <div className="bg-gray-200 p-4 rounded-xl border border-gray-400">
+                      <label className="block text-sm font-bold text-gray-800 mb-2">Silver (₹)</label>
+                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-gray-500 outline-none bg-white text-gray-900" value={formData.pricing.silver} onChange={e => setFormData({...formData, pricing: {...formData.pricing, silver: Number(e.target.value)}})} />
+                    </div>
+                    <div className="bg-rose-50 p-4 rounded-xl border border-rose-200">
+                      <label className="block text-sm font-bold text-rose-900 mb-2">Recliner (₹)</label>
+                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-rose-500 outline-none bg-white text-gray-900" value={formData.pricing.recliner} onChange={e => setFormData({...formData, pricing: {...formData.pricing, recliner: Number(e.target.value)}})} />
                     </div>
                   </div>
 

@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
-import { Shield, Plus, MonitorPlay, Users, Settings, ArrowLeft, Building2, Trash2 } from "lucide-react";
+import { Shield, Plus, MonitorPlay, Users, Settings, ArrowLeft, Building2, Trash2, MapPin } from "lucide-react";
 import toast from "react-hot-toast";
 
 export default function VenueScreens() {
@@ -120,62 +120,76 @@ export default function VenueScreens() {
       </nav>
 
       <div className="max-w-5xl mx-auto mt-8 px-4 sm:px-6">
-        <div className="bg-gradient-to-r from-gray-900 to-gray-800 rounded-2xl p-8 mb-8 text-white shadow-md relative overflow-hidden">
-          <Building2 className="absolute -bottom-8 -right-8 w-48 h-48 text-gray-700 opacity-30" />
-          <h1 className="text-4xl font-bold tracking-tight relative z-10">{venue.name}</h1>
-          <p className="text-gray-300 mt-2 text-lg relative z-10">{venue.address}, {venue.city}</p>
-          <div className="flex gap-2 mt-4 relative z-10">
+        <div className="mb-8 border-b pb-6">
+          <div className="flex justify-between items-start">
+            <div>
+              <h1 className="text-3xl font-bold text-gray-900 tracking-tight">{venue.name}</h1>
+              <p className="text-gray-500 mt-1 flex items-center gap-1">
+                <MapPin className="w-4 h-4" /> {venue.address}, {venue.city}
+              </p>
+            </div>
+            <button 
+              onClick={() => setShowModal(true)}
+              className="bg-gray-900 hover:bg-black text-white px-5 py-2.5 rounded-lg font-medium flex items-center gap-2 transition"
+            >
+              <Plus className="w-4 h-4" /> Add Screen
+            </button>
+          </div>
+          
+          <div className="flex gap-2 mt-4">
             {venue.amenities.map((a: string, i: number) => (
-              <span key={i} className="bg-gray-800 border border-gray-700 text-xs px-3 py-1 rounded-full">{a}</span>
+              <span key={i} className="bg-gray-100 text-gray-600 text-xs px-2.5 py-1 rounded-md font-medium">{a}</span>
             ))}
           </div>
         </div>
 
-        <div className="flex justify-between items-center mb-6">
-          <h2 className="text-2xl font-bold text-gray-900">Screens & Halls ({venue.screens?.length || 0})</h2>
-          <button 
-            onClick={() => setShowModal(true)}
-            className="bg-[#f84464] hover:bg-red-600 text-white px-6 py-2 rounded-lg font-bold flex items-center gap-2 shadow-sm transition"
-          >
-            <Plus className="w-5 h-5" /> Add Screen
-          </button>
-        </div>
+        <h2 className="text-lg font-bold text-gray-900 mb-4">Configured Screens ({venue.screens?.length || 0})</h2>
 
         {!venue.screens || venue.screens.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-12 text-center">
-            <MonitorPlay className="w-16 h-16 text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-bold text-gray-900">No Screens Added</h3>
-            <p className="text-gray-500 mt-2">Add physical halls (e.g., Audi 1, IMAX) to start scheduling events here.</p>
+          <div className="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center">
+            <MonitorPlay className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+            <h3 className="text-gray-900 font-medium">No Screens Configured</h3>
+            <p className="text-gray-500 text-sm mt-1 mb-4">Create your first physical screen or hall for this venue.</p>
+            <button onClick={() => setShowModal(true)} className="text-[#f84464] font-medium text-sm hover:underline">
+              + Add Screen
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {venue.screens.map((screen: any) => (
-              <div key={screen._id} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 relative group hover:border-[#f84464] transition">
+              <div key={screen._id} className="bg-white rounded-xl border border-gray-200 p-5 relative group hover:shadow-sm transition">
                 <button 
                   onClick={() => handleDeleteScreen(screen._id)}
-                  className="absolute top-4 right-4 text-gray-300 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
+                  className="absolute top-4 right-4 text-gray-400 hover:text-red-500 transition opacity-0 group-hover:opacity-100"
                 >
-                  <Trash2 className="w-5 h-5" />
+                  <Trash2 className="w-4 h-4" />
                 </button>
                 
-                <div className="flex items-center gap-4 mb-4">
-                  <div className="w-12 h-12 bg-red-50 text-[#f84464] rounded-lg flex items-center justify-center">
-                    <MonitorPlay className="w-6 h-6" />
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 bg-gray-50 border text-gray-600 rounded-lg flex items-center justify-center">
+                    <MonitorPlay className="w-5 h-5" />
                   </div>
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900">{screen.name}</h3>
-                    <p className="text-sm font-medium text-gray-500 flex items-center gap-1">
-                      <Users className="w-4 h-4" /> {screen.capacity} Seat Capacity
+                    <h3 className="text-lg font-bold text-gray-900">{screen.name}</h3>
+                    <p className="text-sm text-gray-500 flex items-center gap-1">
+                      <Users className="w-3.5 h-3.5" /> {screen.capacity} Seats
                     </p>
                   </div>
                 </div>
 
-                <div className="bg-gray-50 rounded-lg p-4 border border-gray-100 mt-4">
-                  <h4 className="text-xs font-bold text-gray-500 uppercase tracking-wider mb-2">Seat Categories</h4>
+                <div className="mt-4 pt-4 border-t border-gray-100 flex items-center justify-between">
+                  <p className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Pricing Categories</p>
+                  <Link href={`/admin/venues/${venueId}/screens/${screen._id}`}>
+                    <button className="text-xs font-bold text-[#f84464] hover:bg-red-50 px-3 py-1.5 rounded-lg border border-red-100 transition">
+                      Build Layout
+                    </button>
+                  </Link>
+                </div>
+                <div className="mt-3">
                   <div className="flex flex-wrap gap-2">
                     {screen.categories?.map((cat: any, i: number) => (
-                      <span key={i} className="bg-white border text-gray-700 text-sm font-bold px-3 py-1 rounded-md shadow-sm">
-                        {cat.name} <span className="text-gray-400 font-normal">({cat.priceMultiplier}x base)</span>
+                      <span key={i} className="bg-gray-50 border border-gray-200 text-gray-700 text-xs font-medium px-2 py-1 rounded">
+                        {cat.name} ({cat.priceMultiplier}x)
                       </span>
                     ))}
                   </div>
