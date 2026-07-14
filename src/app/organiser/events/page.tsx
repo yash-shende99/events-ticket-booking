@@ -111,7 +111,7 @@ export default function EventsDirectory() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {movies.map((movie) => (
               <div key={movie._id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow group">
-                <div className="h-64 overflow-hidden relative">
+                <div className="aspect-[2/3] overflow-hidden relative">
                   <img 
                     src={movie.poster || "https://images.unsplash.com/photo-1542204165-65bf26472b9b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"} 
                     alt={movie.title} 
