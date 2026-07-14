@@ -10,13 +10,13 @@ To experience the full system architecture, use the following pre-configured dem
 
 1. **Admin / Superuser** (Full system control)
    - Email: `yashshende9999@gmail.com`
-   - Password: *(Google OAuth / NextAuth configured)*
+   - Password: `123456`
 2. **Organizer** (Pre-loaded with 26 Movies & Events, Revenue Dashboards)
    - Email: `yash.22310893@viit.ac.in`
-   - Password: *(Google OAuth / NextAuth configured)*
+   - Password: `123456`
 3. **Customer / User** (Booking flow, waitlists, checkout)
    - Email: `hvdpvd4@gmail.com`
-   - Password: *(Google OAuth / NextAuth configured)*
+   - Password: `123456`
 
 ## ✨ Key Technical Achievements
 
