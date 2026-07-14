@@ -1,6 +1,17 @@
-# CineVerse - Advanced Ticketing & Event Management Platform
+<div align="center">
+  <h1>🍿 CineVerse</h1>
+  <p><strong>Advanced Ticketing & Event Management Platform</strong></p>
+  
+  ![Next.js](https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js)
+  ![React](https://img.shields.io/badge/React-19-61DAFB?style=for-the-badge&logo=react&logoColor=black)
+  ![TypeScript](https://img.shields.io/badge/TypeScript-007ACC?style=for-the-badge&logo=typescript)
+  ![MongoDB](https://img.shields.io/badge/MongoDB-Atlas-47A248?style=for-the-badge&logo=mongodb)
+  ![TailwindCSS](https://img.shields.io/badge/Tailwind_CSS-38B2AC?style=for-the-badge&logo=tailwind-css)
+</div>
 
-CineVerse is a highly scalable, multi-tenant ticketing platform built with Next.js 15, MongoDB, and TailwindCSS. It features a complete tripartite architecture designed for Admins, Theatre/Event Organizers, and Customers, simulating the core engine of platforms like BookMyShow or Ticketmaster.
+<br/>
+
+CineVerse is a highly scalable, multi-tenant ticketing platform built with Next.js 15, MongoDB, and TailwindCSS. It features a complete tripartite architecture designed for Admins, Theatre/Event Organizers, and Customers, simulating the core engine of industry-leading platforms.
 
 ## 🚀 Live Demo & Environments
 
@@ -347,7 +358,24 @@ yarn dev
 
 ---
 
-## 6. API Design & Documentation
+## 7. Project Structure (Monorepo)
+
+```text
+├── src/
+│   ├── app/                # Next.js 15 App Router Pages & API Routes
+│   │   ├── (auth)/         # Authentication & Login flows
+│   │   ├── admin/          # Admin Superuser Dashboards
+│   │   ├── api/            # Serverless Backend Endpoints
+│   │   ├── organiser/      # Venue & Event Management Dashboards
+│   │   ├── movies/         # Public Facing Movie Discovery
+│   │   └── events/         # Public Facing Event Discovery
+│   ├── components/         # Reusable React UI Components (Tailwind)
+│   ├── lib/                # Database connections, Auth options, Utils
+│   └── models/             # Mongoose Schemas (User, Movie, Ticket)
+├── public/                 # Static assets (fonts, icons, default images)
+└── tailwind.config.ts      # Global styling system
+```
+## 7. API Design & Documentation
 
 - `POST /api/showtimes/[id]/hold-seats` - Validates seat availability and atomically applies a hold TTL.
 - `POST /api/showtimes/[id]/book` - Finalizes a payment session and converts HELD seats to BOOKED.
