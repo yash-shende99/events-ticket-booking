@@ -29,6 +29,33 @@ To experience the full system architecture, use the following pre-configured dem
    - Email: `hvdpvd4@gmail.com`
    - Password: `123456`
 
+## 📸 Application Gallery
+
+Here's a visual walkthrough of the CineVerse experience, from discovery to checkout to management.
+
+<div align="center">
+
+### The Customer Experience
+
+| Homepage & Discovery | Dynamic Seat Selection |
+| :---: | :---: |
+| <img src="website_screenshots/events-ticket-booking-nine.vercel.app_movies.png" width="400"/> | <img src="website_screenshots/events-ticket-booking-nine.vercel.app_movies_6a5323ab94d2356038d82dd0_seat-layout_6a54221219b9fb81f3fca998_seats=2&time=06%3A45%20PM.png" width="400"/> |
+| *Browsing the latest movies and events* | *Interactive, real-time theater seat mapping* |
+
+| Add-ons & Concessions | Digital Ticketing & Orders |
+| :---: | :---: |
+| <img src="website_screenshots/events-ticket-booking-nine.vercel.app_movies_6a5323ab94d2356038d82dd0_addons_6a54221219b9fb81f3fca998_total=900&seats=C11,E13.png" width="400"/> | <img src="website_screenshots/events-ticket-booking-nine.vercel.app_profile_orders.png" width="400"/> |
+| *Food and beverage upselling during checkout* | *User profile showing confirmed tickets and QR codes* |
+
+### The Organiser & Admin Hub
+
+| Organiser Dashboard | Admin Venue Management |
+| :---: | :---: |
+| <img src="website_screenshots/events-ticket-booking-nine.vercel.app_organiser.png" width="400"/> | <img src="website_screenshots/events-ticket-booking-nine.vercel.app_admin_venues.png" width="400"/> |
+| *Real-time analytics and revenue tracking* | *Superadmin control over platform-wide venues* |
+
+</div>
+
 ## ✨ Key Technical Achievements
 
 - 🎟️ **Unified Super Schema:** Supports both traditional Movie Screenings (with interactive seat mapping) and Live Events (with dynamic pricing tiers) seamlessly.
