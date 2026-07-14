@@ -111,10 +111,10 @@ export default function UserMenuClient({ isAuthenticated, userName }: UserMenuCl
       href: "/organiser/waitlist"
     },
     {
-      title: "Settings",
+      title: "Organiser Settings",
       subtitle: "Profile & Branding",
-      icon: <Settings className="w-5 h-5 text-gray-500" />,
-      href: "/organiser/settings"
+      icon: <UserCircle className="w-5 h-5 text-gray-500" />,
+      href: "/organiser/profile"
     }
   ];
 
@@ -165,9 +165,13 @@ export default function UserMenuClient({ isAuthenticated, userName }: UserMenuCl
           <div>
             <h2 className="text-2xl font-bold text-gray-900">Hey{userName ? `, ${userName}` : '!'}</h2>
             {isAuthenticated ? (
-              <p className="text-sm text-[#f84464] cursor-pointer hover:underline mt-1">Edit Profile &gt;</p>
+              <Link href="/profile/settings" onClick={() => setIsOpen(false)}>
+                <p className="text-sm text-[#f84464] cursor-pointer hover:underline mt-1">Edit Profile &gt;</p>
+              </Link>
             ) : (
-              <p className="text-sm text-[#f84464] cursor-pointer hover:underline mt-1">Sign in to sync your profile &gt;</p>
+              <Link href="/login" onClick={() => setIsOpen(false)}>
+                <p className="text-sm text-[#f84464] cursor-pointer hover:underline mt-1">Sign in to sync your profile &gt;</p>
+              </Link>
             )}
           </div>
           <div className="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center shrink-0 border border-gray-200">
@@ -175,15 +179,7 @@ export default function UserMenuClient({ isAuthenticated, userName }: UserMenuCl
           </div>
         </div>
 
-        {/* WhatsApp Banner */}
-        <div className="bg-amber-50/60 p-4 border-b border-gray-100 flex items-start gap-3 cursor-pointer hover:bg-amber-50 transition-colors">
-          <Info className="w-5 h-5 text-gray-500 shrink-0 mt-0.5" />
-          <div className="flex-1">
-            <p className="text-sm text-gray-800 font-medium">Get tickets on Whatsapp/SMS!</p>
-            <p className="text-xs text-gray-500 mt-0.5">Add your Mobile Number</p>
-          </div>
-          <ChevronRight className="w-4 h-4 text-gray-400 shrink-0 mt-1" />
-        </div>
+
 
         {/* Scrollable Menu Items */}
         <div className="flex-1 overflow-y-auto">

@@ -31,17 +31,26 @@ export async function POST(req: NextRequest) {
     }
 
     await connectDB();
-    const { movieId, venueId, screenId, startDate, endDate, capacityRequested, message } = await req.json();
+    const { movieId, isEvent, eventLocation, venueId, screenId, startDate, endDate, capacityRequested, message } = await req.json();
 
-    if (!movieId || !venueId || !screenId || !startDate || !endDate || !capacityRequested) {
+    if (!movieId || !startDate || !endDate || !capacityRequested) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    }
+    
+    if (isEvent && !eventLocation) {
+      return NextResponse.json({ error: "Event Location is required for events" }, { status: 400 });
+    }
+    if (!isEvent && (!venueId || !screenId)) {
+      return NextResponse.json({ error: "Theater Venue and Screen are required for movies" }, { status: 400 });
     }
 
     const newRequest = await VenueRequest.create({
       organiserId: session.user.id,
       movieId,
-      venueId,
-      screenId,
+      isEvent: isEvent || false,
+      eventLocation: isEvent ? eventLocation : undefined,
+      venueId: !isEvent ? venueId : undefined,
+      screenId: !isEvent ? screenId : undefined,
       startDate: new Date(startDate),
       endDate: new Date(endDate),
       capacityRequested,

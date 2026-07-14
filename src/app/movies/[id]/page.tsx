@@ -4,6 +4,8 @@ import { Share2, Play, Heart, Star } from "lucide-react";
 import BookTicketsButton from "@/components/BookTicketsButton";
 import { CastSection, CrewSection } from "@/components/CastCrewCards";
 import MovieActionsClient from "@/components/movies/MovieActionsClient";
+import InterestedButtonClient from "@/components/movies/InterestedButtonClient";
+import TrailerPosterClient from "@/components/movies/TrailerPosterClient";
 
 import { Movie } from "@/models/Movie";
 import connectDB from "@/lib/db";
@@ -63,38 +65,12 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ i
 
         <div className="relative z-10 max-w-7xl mx-auto px-4 lg:px-8 py-10 flex items-start gap-8">
           {/* ── Poster ── */}
-          <div className="shrink-0 w-[220px] group">
-            <div
-              className="relative overflow-hidden shadow-2xl cursor-pointer"
-              style={{ borderRadius: "16px 16px 0 0" }}
-            >
-              <Image
-                src={MOVIE.poster}
-                alt={MOVIE.title}
-                width={220}
-                height={330}
-                className="w-full object-cover"
-                style={{ height: 330, display: "block" }}
-                unoptimized
-                priority
-              />
-              {/* Trailer hover */}
-              <div className="absolute inset-0 bg-black/30 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                <div className="w-14 h-14 rounded-full bg-black/60 flex items-center justify-center border border-white/30">
-                  <Play className="w-6 h-6 text-white ml-1" fill="currentColor" />
-                </div>
-                <span className="text-white text-sm font-medium mt-2">Trailers</span>
-              </div>
-              {/* Release badge */}
-              {MOVIE.releaseDate && (
-                <div className="absolute bottom-0 left-0 right-0 bg-[#f84464]/90 text-white text-xs font-semibold text-center py-1.5">
-                  {String(MOVIE.releaseDate).toLowerCase().startsWith("releasing")
-                    ? MOVIE.releaseDate
-                    : `In cinemas: ${MOVIE.releaseDate}`}
-                </div>
-              )}
-            </div>
-          </div>
+          <TrailerPosterClient 
+            poster={MOVIE.poster} 
+            title={MOVIE.title} 
+            releaseDate={MOVIE.releaseDate} 
+            trailerUrl={MOVIE.trailerUrl} 
+          />
 
           {/* ── Info ── */}
           <div className="flex flex-col justify-center text-white flex-1 min-w-0 py-2">
@@ -108,10 +84,7 @@ export default async function MovieDetailsPage({ params }: { params: Promise<{ i
                   <span className="font-bold text-lg">{MOVIE.rating}/10</span>
                   <span className="text-gray-400 text-sm">{MOVIE.votes}</span>
                 </div>
-                <div className="flex items-center gap-2 bg-white/10 rounded-xl px-4 py-3 cursor-pointer hover:bg-white/20 transition">
-                  <Heart className="w-5 h-5 text-[#f84464]" />
-                  <span className="text-sm text-gray-300">I'm Interested</span>
-                </div>
+                <InterestedButtonClient movieId={MOVIE._id.toString()} />
               </div>
             )}
 

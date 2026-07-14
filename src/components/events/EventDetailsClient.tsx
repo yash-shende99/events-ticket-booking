@@ -169,10 +169,8 @@ export default function EventDetailsClient({ event }: { event: any }) {
           {/* About */}
           <section className="mb-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-6">About the Event</h2>
-            <p className="text-gray-700 leading-relaxed text-lg">
-              An evening of devotional melodies and the melodious court of classical ragas. 
-              Enjoy a magnificent performance that will transport you to a world of musical bliss. 
-              Join us for this special occasion and experience the magic live.
+            <p className="text-gray-700 leading-relaxed text-lg whitespace-pre-wrap">
+              {event.description || "No description provided for this event. Book your tickets now to experience the magic live!"}
             </p>
           </section>
 

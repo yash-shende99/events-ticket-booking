@@ -8,7 +8,7 @@ import { Calendar, Image as ImageIcon, CheckCircle2, ChevronRight, X, Plus } fro
 import { useSession } from "next-auth/react";
 import UserMenuClient from "@/components/UserMenuClient";
 
-const EVENT_TYPES = ["Movie", "Concert", "Sports", "Stand-up", "Theatre"];
+const EVENT_TYPES = ["Movie", "Event"];
 
 export default function EditEventPage() {
   const { data: session, status } = useSession();

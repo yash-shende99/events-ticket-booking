@@ -5,6 +5,7 @@ import { Movie } from "@/models/Movie";
 import { Event } from "@/models/Event";
 import { Showtime } from "@/models/Showtime";
 import { Waitlist } from "@/models/Waitlist";
+import { EventTicket } from "@/models/EventTicket";
 
 // Ensure schemas
 import "@/models/Theater";
@@ -29,14 +30,24 @@ export async function GET(req: Request) {
     const myMovies = await Movie.find({ organiserId }).select("_id genres title").lean();
     const myEvents = await Event.find({ organiserId }).select("_id").lean();
     const myMovieIds = myMovies.map((m: any) => m._id.toString());
+    const myEventIds = myEvents.map((e: any) => e._id.toString());
 
     const totalEventsCount = myMovies.length + myEvents.length;
 
     // Fetch Tickets
     const tickets = await Ticket.find({ 
-      status: "CONFIRMED",
+      status: { $in: ["CONFIRMED", "USED"] },
       movie: { $in: myMovieIds }
     }).populate("movie").lean();
+
+    // Fetch Event Tickets
+    const eventTickets = await EventTicket.find({
+      status: { $in: ["CONFIRMED", "USED"] },
+      event: { $in: myEventIds }
+    }).populate("event").lean();
+
+    console.log("DEBUG: myEventIds:", myEventIds);
+    console.log("DEBUG: eventTickets found:", eventTickets.length);
 
     // Fetch Showtimes
     const showtimes = await Showtime.find({
@@ -106,6 +117,37 @@ export async function GET(req: Request) {
         genres.forEach((genre: string) => {
           categoryRevenueMap[genre] = (categoryRevenueMap[genre] || 0) + rev;
         });
+      }
+    });
+
+    eventTickets.forEach((ticket: any) => {
+      const rev = ticket.totalPrice || 0;
+      const numSeats = ticket.tickets ? ticket.tickets.reduce((sum: number, t: any) => sum + t.count, 0) : 1;
+      
+      totalRevenue += rev;
+      totalTicketsSold += numSeats;
+
+      const ticketDateStr = new Date(ticket.createdAt).toISOString().split("T")[0];
+      if (ticketDateStr === todayStr) {
+        todaysRevenue += rev;
+      }
+
+      if (dailyStats[ticketDateStr]) {
+        dailyStats[ticketDateStr].revenue += rev;
+        dailyStats[ticketDateStr].tickets += numSeats;
+      }
+
+      if (ticket.event) {
+        const eventId = ticket.event._id.toString();
+        if (!movieRevenueMap[eventId]) {
+          movieRevenueMap[eventId] = { title: ticket.event.title, revenue: 0, tickets: 0 };
+        }
+        movieRevenueMap[eventId].revenue += rev;
+        movieRevenueMap[eventId].tickets += numSeats;
+
+        // Map Category
+        const category = ticket.event.category || "Event";
+        categoryRevenueMap[category] = (categoryRevenueMap[category] || 0) + rev;
       }
     });
 

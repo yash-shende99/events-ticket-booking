@@ -97,7 +97,11 @@ export default function AdminWaitlists() {
                 <div className="p-5 border-b border-gray-100 bg-gray-50 flex justify-between items-start">
                   <div>
                     <h3 className="font-bold text-gray-900 text-lg">{group.showtime.movie?.title}</h3>
-                    <p className="text-sm text-gray-600 font-medium">{group.showtime.theater?.name} • {group.showtime.theater?.city}</p>
+                    {group.showtime.isEvent ? (
+                       <p className="text-sm text-gray-600 font-medium">{group.showtime.eventLocation || "Custom Location"} • Event Venue</p>
+                    ) : (
+                       <p className="text-sm text-gray-600 font-medium">{group.showtime.theater?.name || "Unknown Venue"} • {group.showtime.theater?.city || "Unknown City"}</p>
+                    )}
                     <p className="text-xs text-gray-500 mt-1 flex items-center gap-1">
                       <Clock className="w-3 h-3" /> {new Date(group.showtime.date).toLocaleDateString()} at {group.showtime.time}
                     </p>
@@ -130,26 +134,11 @@ export default function AdminWaitlists() {
                             <p className="text-xs text-gray-500">Requested: <span className="font-semibold text-gray-700">{entry.seatsNeeded} {entry.category} Seats</span></p>
                           </div>
                         </div>
-                        <button 
-                          onClick={() => toast.success("Force assigning seats functionality coming soon")}
-                          className="text-[#f84464] hover:bg-red-50 p-2 rounded-lg transition-colors"
-                          title="Force Assign Seats"
-                        >
-                          <UserPlus className="w-4 h-4" />
-                        </button>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div className="p-4 border-t border-gray-100 bg-gray-50 mt-auto">
-                  <button 
-                    onClick={() => handleNotifyQueue(group.showtime._id)}
-                    className="w-full py-2.5 bg-gray-900 hover:bg-gray-800 text-white font-medium rounded-xl transition-all shadow-sm flex items-center justify-center gap-2"
-                  >
-                    <BellRing className="w-4 h-4" /> Notify Queue of Cancellations
-                  </button>
-                </div>
               </div>
             ))}
           </div>

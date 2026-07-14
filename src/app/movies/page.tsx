@@ -12,7 +12,7 @@ export const metadata = {
 export default async function MoviesPage() {
   await connectDB();
   // Only fetch fields needed for the listing to keep payload small & fast
-  const movies = await Movie.find({}).sort({ isFeatured: -1, _id: -1 }).select(
+  const movies = await Movie.find({ eventType: { $ne: "Event" } }).sort({ isFeatured: -1, _id: -1 }).select(
     'title poster genres formats languages certification rating votes'
   ).lean();
 

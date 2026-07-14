@@ -4,12 +4,11 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
-import { Calendar, Image as ImageIcon, CheckCircle2, ChevronRight, X, Plus } from "lucide-react";
+import { Calendar, Image as ImageIcon, CheckCircle2, ChevronRight, X, Plus, IndianRupee, Trash2 } from "lucide-react";
 import { useSession } from "next-auth/react";
 import UserMenuClient from "@/components/UserMenuClient";
 
-const EVENT_TYPES = ["Movie", "Concert", "Sports", "Stand-up", "Theatre"];
-const STATUSES = ["Draft", "Published", "Upcoming", "Completed", "Cancelled"];
+const EVENT_TYPES = ["Movie", "Event"];
 
 export default function CreateEventPage() {
   const { data: session } = useSession();
@@ -26,12 +25,16 @@ export default function CreateEventPage() {
     duration: "",
     certification: "U/A",
     releaseDate: "",
-    status: "Pending Schedule",
+    status: "Pending Admin Approval", // Default to new request status
     poster: "",
     bannerUrl: "",
     trailerUrl: "",
     gallery: [] as string[],
-    // Legacy fields needed by DB but not strictly used for all events
+    basePricing: [
+      { category: "Standard", price: 250 },
+      { category: "Premium", price: 450 }
+    ],
+    // Legacy fields needed by DB
     rating: "0",
     votes: "0",
     formats: ["2D"],
@@ -52,6 +55,25 @@ export default function CreateEventPage() {
     setFormData({ ...formData, gallery: newGallery });
   };
 
+  const addPricingCategory = () => {
+    setFormData({
+      ...formData,
+      basePricing: [...formData.basePricing, { category: "", price: 0 }]
+    });
+  };
+
+  const updatePricing = (index: number, field: string, value: string | number) => {
+    const newPricing = [...formData.basePricing];
+    newPricing[index] = { ...newPricing[index], [field]: value };
+    setFormData({ ...formData, basePricing: newPricing });
+  };
+
+  const removePricingCategory = (index: number) => {
+    const newPricing = [...formData.basePricing];
+    newPricing.splice(index, 1);
+    setFormData({ ...formData, basePricing: newPricing });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (step < 3) {
@@ -61,12 +83,11 @@ export default function CreateEventPage() {
 
     setIsLoading(true);
     try {
-      // Format data
       const payload = {
         ...formData,
         genres: formData.genres.split(",").map(g => g.trim()).filter(Boolean),
         languages: formData.languages.split(",").map(l => l.trim()).filter(Boolean),
-        cast: [], // Keeping cast empty for now to simplify
+        cast: [], 
       };
 
       const res = await fetch("/api/organiser/events", {
@@ -76,9 +97,9 @@ export default function CreateEventPage() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Failed to create event");
+      if (!res.ok) throw new Error(data.error || "Failed to submit event request");
 
-      toast.success("Event created successfully!");
+      toast.success("Event Request Sent to Admin!");
       router.push("/organiser");
     } catch (err: any) {
       toast.error(err.message);
@@ -91,10 +112,10 @@ export default function CreateEventPage() {
     <div className="flex items-center justify-center mb-8">
       {[1, 2, 3].map((s, i) => (
         <div key={s} className="flex items-center">
-          <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold ${step >= s ? 'bg-[#f84464] text-white' : 'bg-gray-200 text-gray-500'}`}>
+          <div className={`flex items-center justify-center w-10 h-10 rounded-full font-bold transition-colors ${step >= s ? 'bg-[#f84464] text-white' : 'bg-gray-200 text-gray-500'}`}>
             {step > s ? <CheckCircle2 className="w-6 h-6" /> : s}
           </div>
-          {i < 2 && <div className={`h-1 w-16 mx-2 rounded ${step > s ? 'bg-[#f84464]' : 'bg-gray-200'}`} />}
+          {i < 2 && <div className={`h-1 w-16 mx-2 rounded transition-colors ${step > s ? 'bg-[#f84464]' : 'bg-gray-200'}`} />}
         </div>
       ))}
     </div>
@@ -128,8 +149,8 @@ export default function CreateEventPage() {
       <div className="max-w-4xl mx-auto mt-12 px-4 sm:px-6">
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
           <div className="bg-[#f84464] px-8 py-8 text-center">
-            <h2 className="text-3xl font-bold text-white tracking-tight">Create a New Event</h2>
-            <p className="text-rose-100 mt-2">Publish movies, concerts, or stand-up shows instantly.</p>
+            <h2 className="text-3xl font-bold text-white tracking-tight">Propose a New Listing</h2>
+            <p className="text-rose-100 mt-2">Submit a movie or event request to the platform administrators.</p>
           </div>
 
           <div className="p-8">
@@ -143,41 +164,62 @@ export default function CreateEventPage() {
                   <h3 className="text-xl font-bold border-b pb-2 flex items-center gap-2"><Calendar className="w-5 h-5 text-[#f84464]" /> Basic Information</h3>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Event Type</label>
-                      <select className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.eventType} onChange={e => setFormData({...formData, eventType: e.target.value})}>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Listing Type *</label>
+                      <select className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.eventType} onChange={e => {
+                        const newType = e.target.value;
+                        setFormData({
+                          ...formData, 
+                          eventType: newType,
+                          basePricing: newType === "Event" ? [
+                            { category: "SILVER STANDING", price: 499 },
+                            { category: "GOLD CHAIR", price: 898 },
+                            { category: "EB PLATINUM CHAIR", price: 1247 },
+                            { category: "EB VIP CHAIR", price: 1746 }
+                          ] : [
+                            { category: "Standard", price: 250 },
+                            { category: "Premium", price: 450 }
+                          ]
+                        });
+                      }}>
                         {EVENT_TYPES.map(type => <option key={type} value={type}>{type}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Title *</label>
                       <input required type="text" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.title} onChange={e => setFormData({...formData, title: e.target.value})} placeholder="e.g. Coldplay Tour 2026" />
                     </div>
                     <div className="md:col-span-2">
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-                      <textarea required rows={4} className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none resize-none" value={formData.about} onChange={e => setFormData({...formData, about: e.target.value})} placeholder="Describe the event..."></textarea>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Description *</label>
+                      <textarea required rows={4} className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none resize-none" value={formData.about} onChange={e => setFormData({...formData, about: e.target.value})} placeholder="Describe the listing..."></textarea>
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Genres (comma separated)</label>
-                      <input required type="text" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.genres} onChange={e => setFormData({...formData, genres: e.target.value})} placeholder="Music, Live" />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Genres / Categories (comma separated) *</label>
+                      <input required type="text" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.genres} onChange={e => setFormData({...formData, genres: e.target.value})} placeholder={formData.eventType === "Movie" ? "Action, Sci-Fi" : "Music, Live Concert"} />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Languages (comma separated)</label>
-                      <input required type="text" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.languages} onChange={e => setFormData({...formData, languages: e.target.value})} placeholder="English" />
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Languages (comma separated) *</label>
+                      <input required type="text" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.languages} onChange={e => setFormData({...formData, languages: e.target.value})} placeholder="English, Hindi" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Duration</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Duration *</label>
                       <input required type="text" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.duration} onChange={e => setFormData({...formData, duration: e.target.value})} placeholder="e.g. 2h 30m" />
                     </div>
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Age Restriction</label>
-                      <select className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.certification} onChange={e => setFormData({...formData, certification: e.target.value})}>
-                        <option value="U">U (Universal)</option>
-                        <option value="U/A">U/A (Parental Guidance)</option>
-                        <option value="A">A (Adults Only)</option>
-                        <option value="All Ages">All Ages</option>
-                        <option value="18+">18+</option>
-                      </select>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Release / Start Date *</label>
+                      <input required type="date" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.releaseDate} onChange={e => setFormData({...formData, releaseDate: e.target.value})} />
                     </div>
+
+                    {/* DYNAMIC FIELD: Certification only for Movies */}
+                    {formData.eventType === "Movie" && (
+                      <div className="md:col-span-2">
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Age Certification</label>
+                        <select className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.certification} onChange={e => setFormData({...formData, certification: e.target.value})}>
+                          <option value="U">U (Universal)</option>
+                          <option value="U/A">U/A (Parental Guidance)</option>
+                          <option value="A">A (Adults Only)</option>
+                        </select>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}
@@ -188,17 +230,19 @@ export default function CreateEventPage() {
                   <h3 className="text-xl font-bold border-b pb-2 flex items-center gap-2"><ImageIcon className="w-5 h-5 text-[#f84464]" /> Rich Media</h3>
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Main Poster URL (Vertical)</label>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">Main Poster URL (Vertical) *</label>
                       <input required type="url" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.poster} onChange={e => setFormData({...formData, poster: e.target.value})} placeholder="https://..." />
                     </div>
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-1">Banner URL (Horizontal)</label>
                       <input type="url" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.bannerUrl} onChange={e => setFormData({...formData, bannerUrl: e.target.value})} placeholder="https://..." />
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Trailer URL (YouTube)</label>
-                      <input type="url" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.trailerUrl} onChange={e => setFormData({...formData, trailerUrl: e.target.value})} placeholder="https://youtube.com/watch?v=..." />
-                    </div>
+                    {formData.eventType === "Movie" && (
+                      <div>
+                        <label className="block text-sm font-medium text-gray-700 mb-1">Trailer URL (YouTube)</label>
+                        <input type="url" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.trailerUrl} onChange={e => setFormData({...formData, trailerUrl: e.target.value})} placeholder="https://youtube.com/watch?v=..." />
+                      </div>
+                    )}
                     
                     <div className="bg-gray-50 p-4 rounded-lg border">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Gallery Images</label>
@@ -219,25 +263,65 @@ export default function CreateEventPage() {
                 </div>
               )}
 
-              {/* STEP 3: SCHEDULE & STATUS */}
+              {/* STEP 3: BASE PRICING & SUBMIT */}
               {step === 3 && (
                 <div className="space-y-6 animate-fadeIn">
-                  <h3 className="text-xl font-bold border-b pb-2 flex items-center gap-2"><CheckCircle2 className="w-5 h-5 text-[#f84464]" /> Schedule & Status</h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Base Event Date</label>
-                      <input required type="date" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.releaseDate} onChange={e => setFormData({...formData, releaseDate: e.target.value})} />
-                    </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">Publishing Status</label>
-                      <div className="w-full border rounded-lg px-4 py-2 bg-gray-100 text-gray-500 cursor-not-allowed">
-                        Pending Schedule
-                      </div>
-                    </div>
+                  <h3 className="text-xl font-bold border-b pb-2 flex items-center gap-2"><IndianRupee className="w-5 h-5 text-[#f84464]" /> Base Pricing Configuration</h3>
+                  
+                  <div className="bg-blue-50 text-blue-800 p-4 rounded-lg text-sm border border-blue-100 mb-6">
+                    <p className="font-bold mb-1">How Pricing Works</p>
+                    <p>Define the base pricing tiers for this listing. If this is a movie, define standard classes (e.g. Silver, Gold, Platinum). If this is an event, define sections (e.g. VIP, General Admission).</p>
                   </div>
-                  <div className="bg-amber-50 text-amber-800 p-4 rounded-lg text-sm border border-amber-100">
-                    <p className="font-bold mb-1">Notice on Scheduling</p>
-                    <p>When you create this event, it will be submitted to the Platform Admin. The Admin controls physical theater venues and will schedule exact timings and screens for your event. Once scheduled, it will automatically be Published!</p>
+
+                  <div className="space-y-4">
+                    {formData.basePricing.map((pricing, index) => (
+                      <div key={index} className="flex items-center gap-4 bg-gray-50 p-4 rounded-xl border border-gray-200">
+                        <div className="flex-1">
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Category Name</label>
+                          <input 
+                            required 
+                            type="text" 
+                            className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" 
+                            value={pricing.category} 
+                            onChange={(e) => updatePricing(index, "category", e.target.value)} 
+                            placeholder={formData.eventType === "Movie" ? "e.g. Gold" : "e.g. VIP Front Row"} 
+                          />
+                        </div>
+                        <div className="w-1/3">
+                          <label className="block text-xs font-bold text-gray-500 uppercase tracking-wider mb-1">Price (₹)</label>
+                          <input 
+                            required 
+                            type="number" 
+                            min="0"
+                            className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none font-mono" 
+                            value={pricing.price} 
+                            onChange={(e) => updatePricing(index, "price", Number(e.target.value))} 
+                          />
+                        </div>
+                        {formData.basePricing.length > 1 && (
+                          <button 
+                            type="button" 
+                            onClick={() => removePricingCategory(index)} 
+                            className="mt-5 p-2 bg-red-100 text-red-600 hover:bg-red-200 rounded-lg transition"
+                          >
+                            <Trash2 className="w-5 h-5" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+
+                    <button 
+                      type="button" 
+                      onClick={addPricingCategory} 
+                      className="w-full py-3 border-2 border-dashed border-gray-300 hover:border-[#f84464] text-gray-600 hover:text-[#f84464] rounded-xl font-bold flex items-center justify-center gap-2 transition"
+                    >
+                      <Plus className="w-5 h-5" /> Add Pricing Category
+                    </button>
+                  </div>
+
+                  <div className="bg-amber-50 text-amber-800 p-4 rounded-lg text-sm border border-amber-100 mt-8">
+                    <p className="font-bold mb-1">Admin Approval Required</p>
+                    <p>Once you submit this listing and pricing setup, it will be sent to the Platform Admin for review. You can schedule showtimes only after it is <strong>Approved</strong>.</p>
                   </div>
                 </div>
               )}
@@ -248,7 +332,7 @@ export default function CreateEventPage() {
                 ) : <div></div>}
                 
                 <button disabled={isLoading} type="submit" className="flex items-center gap-2 bg-[#f84464] hover:bg-[#e03a58] text-white font-bold py-3 px-8 rounded-lg shadow-md transition disabled:opacity-70">
-                  {isLoading ? "Saving..." : step === 3 ? "Publish Event" : "Next Step"}
+                  {isLoading ? "Saving..." : step === 3 ? "Submit Request to Admin" : "Next Step"}
                   {step < 3 && <ChevronRight className="w-5 h-5" />}
                 </button>
               </div>

@@ -20,6 +20,8 @@ export async function POST(req: Request) {
       ...data,
       organiserId: session.user.id,
       // Fallbacks if some arrays are missing from the request
+      status: "Pending Admin Approval", // Force status securely
+      basePricing: data.basePricing || [],
       formats: data.formats || [],
       languages: data.languages || [],
       genres: data.genres || [],

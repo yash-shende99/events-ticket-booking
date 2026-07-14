@@ -16,9 +16,12 @@ export default function AdminScheduleEnginePage() {
 
   const [events, setEvents] = useState<any[]>([]);
   const [theaters, setTheaters] = useState<any[]>([]);
+  const [venueRequests, setVenueRequests] = useState<any[]>([]);
 
   const [formData, setFormData] = useState({
     eventId: "",
+    isEvent: false,
+    eventLocation: "",
     theaterId: "",
     screen: "Hall 1",
     capacity: 100,
@@ -45,13 +48,18 @@ export default function AdminScheduleEnginePage() {
       const preMovieId = searchParams.get("movieId");
       const preVenueId = searchParams.get("venueId");
       const preScreenId = searchParams.get("screenId");
+      const preIsEvent = searchParams.get("isEvent") === "true";
+      const preLocation = searchParams.get("location") || "";
 
       Promise.all([
         fetch("/api/admin/events").then(res => res.json()),
-        fetch("/api/theaters").then(res => res.json())
-      ]).then(([eventsData, theatersData]) => {
+        fetch("/api/theaters").then(res => res.json()),
+        fetch("/api/admin/venue-requests").then(res => res.json())
+      ]).then(([eventsData, theatersData, venueReqsData]) => {
         setEvents(Array.isArray(eventsData) ? eventsData : []);
         setTheaters(Array.isArray(theatersData) ? theatersData : []);
+        const validVenueReqs = Array.isArray(venueReqsData) ? venueReqsData : [];
+        setVenueRequests(validVenueReqs);
         
         let initialEventId = eventsData.length > 0 ? eventsData[0]._id : "";
         if (preMovieId && eventsData.some((e: any) => e._id === preMovieId)) {
@@ -85,9 +93,28 @@ export default function AdminScheduleEnginePage() {
            }
         }
 
+        let initialIsEvent = preIsEvent;
+        let finalLocation = preLocation;
+
+        if (initialEventId) {
+          const ev = eventsData.find((e: any) => e._id === initialEventId);
+          if (ev && ev.eventType === "Event") {
+            initialIsEvent = true;
+            if (!finalLocation) {
+               // Try to find the venue request for this event
+               const vReq = validVenueReqs.find((req: any) => (req.movieId?._id || req.movieId) === initialEventId);
+               if (vReq && vReq.eventLocation) {
+                 finalLocation = vReq.eventLocation;
+               }
+            }
+          }
+        }
+
         setFormData(prev => ({ 
           ...prev, 
           eventId: initialEventId,
+          isEvent: initialIsEvent,
+          eventLocation: finalLocation,
           theaterId: initialTheaterId,
           screen: initialScreenName,
           capacity: initialCapacity
@@ -212,48 +239,73 @@ export default function AdminScheduleEnginePage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1">Select Event (Status)</label>
-                        <select required className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f84464] outline-none bg-gray-50" value={formData.eventId} onChange={e => setFormData({...formData, eventId: e.target.value})}>
+                        <select required className="w-full border rounded-lg px-4 py-3 focus:ring-2 focus:ring-[#f84464] outline-none bg-gray-50" value={formData.eventId} onChange={e => {
+                          const evId = e.target.value;
+                          const ev = events.find(ev => ev._id === evId);
+                          const isEvent = ev?.eventType === 'Event';
+                          let loc = formData.eventLocation;
+                          if (isEvent) {
+                            const vReq = venueRequests.find((req: any) => (req.movieId?._id || req.movieId) === evId);
+                            if (vReq && vReq.eventLocation) loc = vReq.eventLocation;
+                          }
+                          setFormData({...formData, eventId: evId, isEvent: isEvent, eventLocation: loc});
+                        }}>
                           {events.map(ev => <option key={ev._id} value={ev._id}>{ev.title} ({ev.eventType || 'Movie'}) - {ev.status}</option>)}
                         </select>
                       </div>
 
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Select Theater Venue</label>
-                        <select required className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.theaterId} onChange={e => setFormData({...formData, theaterId: e.target.value})}>
-                          {theaters.map(t => <option key={t._id} value={t._id}>{t.name} - {t.city}</option>)}
-                        </select>
-                      </div>
-                      
-                      <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Assign Screen / Hall</label>
-                        {theaters.find(t => t._id === formData.theaterId)?.screens?.length > 0 ? (
-                          <select 
+                      {formData.isEvent ? (
+                        <div className="md:col-span-2">
+                          <label className="block text-sm font-medium text-gray-700 mb-1">Event Location</label>
+                          <input 
                             required 
+                            type="text" 
                             className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" 
-                            value={formData.screen} 
-                            onChange={e => {
-                              const screenName = e.target.value;
-                              const t = theaters.find(t => t._id === formData.theaterId);
-                              const s = t?.screens?.find((scr: any) => scr.name === screenName);
-                              setFormData({...formData, screen: screenName, capacity: s?.capacity || 100});
-                            }}
-                          >
-                            <option value="">Select a screen...</option>
-                            {theaters.find(t => t._id === formData.theaterId)?.screens?.map((s: any) => (
-                              <option key={s._id} value={s.name}>{s.name} ({s.capacity} seats)</option>
-                            ))}
-                          </select>
-                        ) : (
-                          <div className="w-full border border-red-200 bg-red-50 text-red-600 rounded-lg px-4 py-2 text-sm font-medium">
-                            No screens configured for this theater.
+                            value={formData.eventLocation} 
+                            onChange={e => setFormData({...formData, eventLocation: e.target.value})} 
+                          />
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Select Theater Venue</label>
+                            <select required className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" value={formData.theaterId} onChange={e => setFormData({...formData, theaterId: e.target.value})}>
+                              {theaters.map(t => <option key={t._id} value={t._id}>{t.name} - {t.city}</option>)}
+                            </select>
                           </div>
-                        )}
-                      </div>
+                          
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-1">Assign Screen / Hall</label>
+                            {theaters.find(t => t._id === formData.theaterId)?.screens?.length > 0 ? (
+                              <select 
+                                required 
+                                className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none" 
+                                value={formData.screen} 
+                                onChange={e => {
+                                  const screenName = e.target.value;
+                                  const t = theaters.find(t => t._id === formData.theaterId);
+                                  const s = t?.screens?.find((scr: any) => scr.name === screenName);
+                                  setFormData({...formData, screen: screenName, capacity: s?.capacity || 100});
+                                }}
+                              >
+                                <option value="">Select a screen...</option>
+                                {theaters.find(t => t._id === formData.theaterId)?.screens?.map((s: any) => (
+                                  <option key={s._id} value={s.name}>{s.name} ({s.capacity} seats)</option>
+                                ))}
+                              </select>
+                            ) : (
+                              <div className="w-full border border-red-200 bg-red-50 text-red-600 rounded-lg px-4 py-2 text-sm font-medium">
+                                No screens configured for this theater.
+                              </div>
+                            )}
+                          </div>
+                        </>
+                      )}
 
                       <div className="md:col-span-2">
                         <label className="block text-sm font-medium text-gray-700 mb-1 flex items-center gap-2">
                           Max Seat Capacity (Hard Cap) 
-                          <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Auto-filled from screen layout</span>
+                          {!formData.isEvent && <span className="text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">Auto-filled from screen layout</span>}
                         </label>
                         <input required type="number" min="1" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-[#f84464] outline-none bg-gray-50" value={formData.capacity} onChange={e => setFormData({...formData, capacity: Number(e.target.value)})} />
                       </div>
@@ -298,36 +350,57 @@ export default function AdminScheduleEnginePage() {
                 <div className="space-y-8 animate-fadeIn">
                   <h3 className="text-xl font-bold border-b pb-2 flex items-center gap-2"><IndianRupee className="w-5 h-5 text-[#f84464]" /> Pricing Engine</h3>
                   
-                  <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                    <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
-                      <label className="block text-sm font-bold text-amber-900 mb-2">Premium (₹)</label>
-                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 outline-none bg-white text-gray-900" value={formData.pricing.premium} onChange={e => setFormData({...formData, pricing: {...formData.pricing, premium: Number(e.target.value)}})} />
+                  {formData.isEvent ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                      <div className="bg-gray-200 p-4 rounded-xl border border-gray-400">
+                        <label className="block text-sm font-bold text-gray-800 mb-2">SILVER STANDING (₹)</label>
+                        <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-gray-500 outline-none bg-white text-gray-900" value={formData.pricing.silver} onChange={e => setFormData({...formData, pricing: {...formData.pricing, silver: Number(e.target.value)}})} />
+                      </div>
+                      <div className="bg-yellow-100 p-4 rounded-xl border border-yellow-300">
+                        <label className="block text-sm font-bold text-yellow-900 mb-2">GOLD CHAIR (₹)</label>
+                        <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-500 outline-none bg-white text-gray-900" value={formData.pricing.gold} onChange={e => setFormData({...formData, pricing: {...formData.pricing, gold: Number(e.target.value)}})} />
+                      </div>
+                      <div className="bg-slate-800 p-4 rounded-xl border border-slate-900">
+                        <label className="block text-sm font-bold text-white mb-2">EB PLATINUM CHAIR (₹)</label>
+                        <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-400 outline-none bg-white text-gray-900" value={formData.pricing.platinum} onChange={e => setFormData({...formData, pricing: {...formData.pricing, platinum: Number(e.target.value)}})} />
+                      </div>
+                      <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                        <label className="block text-sm font-bold text-amber-900 mb-2">EB VIP CHAIR (₹)</label>
+                        <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 outline-none bg-white text-gray-900" value={formData.pricing.premium} onChange={e => setFormData({...formData, pricing: {...formData.pricing, premium: Number(e.target.value)}})} />
+                      </div>
                     </div>
-                    <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
-                      <label className="block text-sm font-bold text-slate-900 mb-2">Standard (₹)</label>
-                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none bg-white text-gray-900" value={formData.pricing.standard} onChange={e => setFormData({...formData, pricing: {...formData.pricing, standard: Number(e.target.value)}})} />
+                  ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-6">
+                      <div className="bg-amber-50 p-4 rounded-xl border border-amber-200">
+                        <label className="block text-sm font-bold text-amber-900 mb-2">Premium (₹)</label>
+                        <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-amber-500 outline-none bg-white text-gray-900" value={formData.pricing.premium} onChange={e => setFormData({...formData, pricing: {...formData.pricing, premium: Number(e.target.value)}})} />
+                      </div>
+                      <div className="bg-slate-50 p-4 rounded-xl border border-slate-200">
+                        <label className="block text-sm font-bold text-slate-900 mb-2">Standard (₹)</label>
+                        <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-500 outline-none bg-white text-gray-900" value={formData.pricing.standard} onChange={e => setFormData({...formData, pricing: {...formData.pricing, standard: Number(e.target.value)}})} />
+                      </div>
+                      <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
+                        <label className="block text-sm font-bold text-emerald-900 mb-2">Economy (₹)</label>
+                        <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-gray-900" value={formData.pricing.economy} onChange={e => setFormData({...formData, pricing: {...formData.pricing, economy: Number(e.target.value)}})} />
+                      </div>
+                      <div className="bg-slate-800 p-4 rounded-xl border border-slate-900">
+                        <label className="block text-sm font-bold text-white mb-2">Platinum (₹)</label>
+                        <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-400 outline-none bg-white text-gray-900" value={formData.pricing.platinum} onChange={e => setFormData({...formData, pricing: {...formData.pricing, platinum: Number(e.target.value)}})} />
+                      </div>
+                      <div className="bg-yellow-100 p-4 rounded-xl border border-yellow-300">
+                        <label className="block text-sm font-bold text-yellow-900 mb-2">Gold (₹)</label>
+                        <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-500 outline-none bg-white text-gray-900" value={formData.pricing.gold} onChange={e => setFormData({...formData, pricing: {...formData.pricing, gold: Number(e.target.value)}})} />
+                      </div>
+                      <div className="bg-gray-200 p-4 rounded-xl border border-gray-400">
+                        <label className="block text-sm font-bold text-gray-800 mb-2">Silver (₹)</label>
+                        <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-gray-500 outline-none bg-white text-gray-900" value={formData.pricing.silver} onChange={e => setFormData({...formData, pricing: {...formData.pricing, silver: Number(e.target.value)}})} />
+                      </div>
+                      <div className="bg-rose-50 p-4 rounded-xl border border-rose-200">
+                        <label className="block text-sm font-bold text-rose-900 mb-2">Recliner (₹)</label>
+                        <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-rose-500 outline-none bg-white text-gray-900" value={formData.pricing.recliner} onChange={e => setFormData({...formData, pricing: {...formData.pricing, recliner: Number(e.target.value)}})} />
+                      </div>
                     </div>
-                    <div className="bg-emerald-50 p-4 rounded-xl border border-emerald-200">
-                      <label className="block text-sm font-bold text-emerald-900 mb-2">Economy (₹)</label>
-                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-emerald-500 outline-none bg-white text-gray-900" value={formData.pricing.economy} onChange={e => setFormData({...formData, pricing: {...formData.pricing, economy: Number(e.target.value)}})} />
-                    </div>
-                    <div className="bg-slate-800 p-4 rounded-xl border border-slate-900">
-                      <label className="block text-sm font-bold text-white mb-2">Platinum (₹)</label>
-                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-slate-400 outline-none bg-white text-gray-900" value={formData.pricing.platinum} onChange={e => setFormData({...formData, pricing: {...formData.pricing, platinum: Number(e.target.value)}})} />
-                    </div>
-                    <div className="bg-yellow-100 p-4 rounded-xl border border-yellow-300">
-                      <label className="block text-sm font-bold text-yellow-900 mb-2">Gold (₹)</label>
-                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-yellow-500 outline-none bg-white text-gray-900" value={formData.pricing.gold} onChange={e => setFormData({...formData, pricing: {...formData.pricing, gold: Number(e.target.value)}})} />
-                    </div>
-                    <div className="bg-gray-200 p-4 rounded-xl border border-gray-400">
-                      <label className="block text-sm font-bold text-gray-800 mb-2">Silver (₹)</label>
-                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-gray-500 outline-none bg-white text-gray-900" value={formData.pricing.silver} onChange={e => setFormData({...formData, pricing: {...formData.pricing, silver: Number(e.target.value)}})} />
-                    </div>
-                    <div className="bg-rose-50 p-4 rounded-xl border border-rose-200">
-                      <label className="block text-sm font-bold text-rose-900 mb-2">Recliner (₹)</label>
-                      <input required type="number" className="w-full border rounded-lg px-4 py-2 focus:ring-2 focus:ring-rose-500 outline-none bg-white text-gray-900" value={formData.pricing.recliner} onChange={e => setFormData({...formData, pricing: {...formData.pricing, recliner: Number(e.target.value)}})} />
-                    </div>
-                  </div>
+                  )}
 
                   <div className="bg-white p-6 rounded-xl border shadow-sm space-y-4">
                     <h4 className="font-bold text-gray-900 mb-4">Dynamic Pricing Algorithms</h4>

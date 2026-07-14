@@ -4,7 +4,7 @@ import { useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { Shield, Calendar, Users, Film, Activity, LogOut, Building2, IndianRupee, TrendingUp, ShieldAlert, RefreshCw, Megaphone, LayoutDashboard, ShieldCheck, Settings } from "lucide-react";
+import { Shield, Calendar, Users, Film, Activity, LogOut, Building2, IndianRupee, TrendingUp, ShieldAlert, RefreshCw, Megaphone, LayoutDashboard, ShieldCheck, Settings, Tag } from "lucide-react";
 import { signOut } from "next-auth/react";
 
 export default function AdminDashboard() {
@@ -76,6 +76,15 @@ export default function AdminDashboard() {
             </div>
             <h3 className="text-xl font-bold text-gray-900 mb-2">Waitlist Monitoring</h3>
             <p className="text-gray-500 text-sm">Monitor demand queues for sold-out shows and trigger custom offer emails.</p>
+          </Link>
+
+          {/* Offers & Coupons CMS */}
+          <Link href="/admin/offers" className="group p-6 bg-white rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-all">
+            <div className="w-12 h-12 bg-pink-50 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+              <Tag className="w-6 h-6 text-pink-600" />
+            </div>
+            <h3 className="text-xl font-bold text-gray-900 mb-2">Offers & Coupons</h3>
+            <p className="text-gray-500 text-sm">Create, manage, and toggle promo codes and dynamic offers globally.</p>
           </Link>
 
           {/* Revenue Card */}
@@ -169,8 +178,19 @@ export default function AdminDashboard() {
               <div className="w-12 h-12 rounded-lg bg-purple-50 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                 <Building2 className="w-6 h-6" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Organiser Venue Requests</h3>
-              <p className="text-gray-500 text-sm">Review and approve venue/screen scheduling requests submitted by event organisers.</p>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Venue Requests</h3>
+              <p className="text-gray-500 text-sm">Review screening venue requests from Event Organisers.</p>
+            </div>
+          </Link>
+
+          {/* Organiser Event Requests Card */}
+          <Link href="/admin/requests">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md hover:border-amber-500 transition cursor-pointer group h-full">
+              <div className="w-12 h-12 rounded-lg bg-amber-50 text-amber-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Film className="w-6 h-6" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Event Listing Requests</h3>
+              <p className="text-gray-500 text-sm">Review and approve new movie or event listings before they are published.</p>
             </div>
           </Link>
         </div>

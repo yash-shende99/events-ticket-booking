@@ -3,8 +3,10 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IVenueRequest extends Document {
   organiserId: mongoose.Types.ObjectId;
   movieId: mongoose.Types.ObjectId;
-  venueId: mongoose.Types.ObjectId;
-  screenId: string;
+  isEvent: boolean;
+  eventLocation?: string;
+  venueId?: mongoose.Types.ObjectId;
+  screenId?: string;
   startDate: Date;
   endDate: Date;
   capacityRequested: number;
@@ -18,8 +20,10 @@ const VenueRequestSchema: Schema = new Schema(
   {
     organiserId: { type: Schema.Types.ObjectId, ref: "User", required: true },
     movieId: { type: Schema.Types.ObjectId, ref: "Movie", required: true },
-    venueId: { type: Schema.Types.ObjectId, ref: "Theater", required: true },
-    screenId: { type: String, required: true },
+    isEvent: { type: Boolean, default: false },
+    eventLocation: { type: String },
+    venueId: { type: Schema.Types.ObjectId, ref: "Theater" },
+    screenId: { type: String },
     startDate: { type: Date, required: true },
     endDate: { type: Date, required: true },
     capacityRequested: { type: Number, required: true },
@@ -29,4 +33,7 @@ const VenueRequestSchema: Schema = new Schema(
   { timestamps: true }
 );
 
-export const VenueRequest = mongoose.models.VenueRequest || mongoose.model<IVenueRequest>("VenueRequest", VenueRequestSchema);
+if (mongoose.models.VenueRequest) {
+  delete mongoose.models.VenueRequest;
+}
+export const VenueRequest = mongoose.model<IVenueRequest>("VenueRequest", VenueRequestSchema);

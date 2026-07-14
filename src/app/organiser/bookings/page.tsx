@@ -138,8 +138,8 @@ export default function BookingsManagement() {
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-wrap gap-1 max-w-[120px]">
-                          {booking.seats?.map((seat: string) => (
-                            <span key={seat} className="text-xs font-semibold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">{seat}</span>
+                          {booking.seats?.map((seat: string, i: number) => (
+                            <span key={`${booking._id}-${seat}-${i}`} className="text-xs font-semibold bg-blue-50 text-blue-700 px-1.5 py-0.5 rounded">{seat}</span>
                           ))}
                         </div>
                       </td>

@@ -16,6 +16,7 @@ export interface IMovie extends Document {
   organiserId?: mongoose.Types.ObjectId;
   eventType?: string;
   status?: string;
+  basePricing?: { category: string; price: number }[];
   bannerUrl?: string;
   trailerUrl?: string;
   gallery?: string[];
@@ -44,8 +45,14 @@ const MovieSchema: Schema = new Schema(
       },
     ],
     organiserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
-    eventType: { type: String, enum: ["Movie", "Concert", "Sports", "Stand-up", "Theatre"], default: "Movie" },
-    status: { type: String, enum: ["Draft", "Pending Schedule", "Published", "Upcoming", "Completed", "Cancelled"], default: "Draft" },
+    eventType: { type: String, enum: ["Movie", "Event", "Concert", "Sports", "Stand-up", "Theatre"], default: "Movie" },
+    status: { type: String, enum: ["Draft", "Pending Admin Approval", "Approved", "Pending Schedule", "Published", "Upcoming", "Completed", "Cancelled"], default: "Pending Admin Approval" },
+    basePricing: [
+      {
+        category: { type: String, required: true },
+        price: { type: Number, required: true },
+      }
+    ],
     bannerUrl: { type: String },
     trailerUrl: { type: String },
     gallery: { type: [String] }

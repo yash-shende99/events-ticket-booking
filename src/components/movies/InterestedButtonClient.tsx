@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { Share2, Heart } from "lucide-react";
+import { Heart } from "lucide-react";
 import toast from "react-hot-toast";
 import { useSession } from "next-auth/react";
 
-export default function MovieActionsClient({ movieId }: { movieId: string }) {
+export default function InterestedButtonClient({ movieId }: { movieId: string }) {
   const [isWishlisted, setIsWishlisted] = useState(false);
   const { status } = useSession();
 
@@ -17,7 +17,9 @@ export default function MovieActionsClient({ movieId }: { movieId: string }) {
   };
 
   useEffect(() => {
-    if (status === "authenticated") fetchWishlist();
+    if (status === "authenticated") {
+      fetchWishlist();
+    }
   }, [movieId, status]);
 
   useEffect(() => {
@@ -30,7 +32,7 @@ export default function MovieActionsClient({ movieId }: { movieId: string }) {
 
   const toggleWishlist = async () => {
     if (status === "unauthenticated") {
-      toast.error("Please sign in to add to your wishlist!", { icon: "🔒" });
+      toast.error("Please login to add to wishlist!", { icon: "🔒" });
       return;
     }
 
@@ -44,7 +46,7 @@ export default function MovieActionsClient({ movieId }: { movieId: string }) {
       });
       if (res.status === 401) {
         setIsWishlisted(false);
-        toast.error("Please sign in to add to your wishlist!", { icon: "🔒" });
+        toast.error("Please login to add to wishlist!", { icon: "🔒" });
       } else {
         window.dispatchEvent(new Event('wishlist-update'));
       }
@@ -54,32 +56,15 @@ export default function MovieActionsClient({ movieId }: { movieId: string }) {
     }
   };
 
-  const handleShare = async () => {
-    try {
-      if (navigator.share) {
-        await navigator.share({
-          title: document.title,
-          url: window.location.href,
-        });
-      } else {
-        await navigator.clipboard.writeText(window.location.href);
-        toast.success("Link copied to clipboard!");
-      }
-    } catch (e) {
-      console.log("Share failed", e);
-    }
-  };
-
   return (
-    <div className="self-start pt-2 flex flex-col gap-6">
-      <button onClick={handleShare} className="flex flex-col items-center gap-1 text-white/70 hover:text-white transition">
-        <Share2 className="w-6 h-6" />
-        <span className="text-xs">Share</span>
-      </button>
-      <button onClick={toggleWishlist} className={`flex flex-col items-center gap-1 transition ${isWishlisted ? 'text-[#f84464]' : 'text-white/70 hover:text-white'}`}>
-        <Heart className={`w-6 h-6 ${isWishlisted ? 'fill-current' : ''}`} />
-        <span className="text-xs">Wishlist</span>
-      </button>
-    </div>
+    <button 
+      onClick={toggleWishlist}
+      className={`flex items-center gap-2 rounded-xl px-4 py-3 cursor-pointer transition ${
+        isWishlisted ? 'bg-[#f84464]/20' : 'bg-white/10 hover:bg-white/20'
+      }`}
+    >
+      <Heart className={`w-5 h-5 ${isWishlisted ? 'text-[#f84464] fill-current' : 'text-[#f84464]'}`} />
+      <span className="text-sm text-gray-300">I'm Interested</span>
+    </button>
   );
 }

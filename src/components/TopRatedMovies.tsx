@@ -7,7 +7,7 @@ import connectDB from "@/lib/db";
 
 export default async function TopRatedMovies() {
   await connectDB();
-  const movies = await Movie.find({}).sort({ rating: -1 }).limit(10).lean();
+  const movies = await Movie.find({ eventType: { $ne: "Event" } }).sort({ rating: -1 }).limit(10).lean();
 
   if (!movies || movies.length === 0) {
     return null;

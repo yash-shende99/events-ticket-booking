@@ -104,8 +104,17 @@ export default function AdminSchedulesOverview() {
                         </div>
                       </td>
                       <td className="px-6 py-4">
-                        <p className="font-medium text-gray-900">{show.theater?.name || "Unknown Venue"}</p>
-                        <p className="text-sm text-gray-500">{show.screen} • {show.theater?.city}</p>
+                        {show.isEvent ? (
+                          <>
+                            <p className="font-medium text-gray-900">{show.eventLocation || "Custom Location"}</p>
+                            <p className="text-sm text-gray-500">Event Venue</p>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-medium text-gray-900">{show.theater?.name || "Unknown Venue"}</p>
+                            <p className="text-sm text-gray-500">{show.screen} • {show.theater?.city}</p>
+                          </>
+                        )}
                       </td>
                       <td className="px-6 py-4">
                         <div className="flex flex-col gap-1">

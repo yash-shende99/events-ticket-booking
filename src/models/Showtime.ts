@@ -10,8 +10,10 @@ const ShowtimeSchema = new mongoose.Schema(
     theater: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Theater",
-      required: true,
+      required: false, // Optional for Events
     },
+    isEvent: { type: Boolean, default: false },
+    eventLocation: { type: String },
     screen: {
       type: String, // e.g., "Hall 1", "Main Stage"
       default: "Screen 1"
@@ -66,4 +68,7 @@ const ShowtimeSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-export const Showtime = mongoose.models?.Showtime || mongoose.model("Showtime", ShowtimeSchema);
+if (mongoose.models.Showtime) {
+  delete mongoose.models.Showtime;
+}
+export const Showtime = mongoose.model("Showtime", ShowtimeSchema);

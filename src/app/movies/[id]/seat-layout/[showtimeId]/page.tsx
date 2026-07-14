@@ -5,6 +5,7 @@ import { ChevronLeft } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
+import { useSession } from "next-auth/react";
 import SeatLayoutGrid from "@/components/buytickets/SeatLayoutGrid";
 import SeatSelectionFooter from "@/components/buytickets/SeatSelectionFooter";
 
@@ -18,6 +19,7 @@ export default function SeatLayoutPage({
   const params = use(paramsPromise);
   const searchParams = use(searchParamsPromise);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const seatsToSelect = parseInt(searchParams.seats || "2", 10);
   const time = searchParams.time || "11:05 PM";
@@ -74,7 +76,13 @@ export default function SeatLayoutPage({
   };
 
   const handleProceed = async () => {
-    if (selectedSeats.length !== seatsToSelect) return;
+    if (status === "unauthenticated") {
+      toast.error("Please login first to secure your seats!", { icon: "🔒" });
+      router.push("/login?callbackUrl=" + encodeURIComponent(window.location.pathname + window.location.search));
+      return;
+    }
+
+    if (selectedSeats.length !== seatsToSelect || isHolding) return;
     
     setIsHolding(true);
     const loadingToast = toast.loading("Securing your seats...");

@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { ChevronDown, Loader2 } from "lucide-react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
+import toast from "react-hot-toast";
 import CouponInput from "../../buytickets/CouponInput";
 
 type TicketTier = {
@@ -19,10 +21,19 @@ export default function EventTicketsClient({ event }: { event: any }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [discount, setDiscount] = useState(0);
   const router = useRouter();
+  const { data: session, status } = useSession();
 
   const basePrice = parseInt(String(event.price).replace(/[^0-9]/g, "")) || 499;
 
-  const tickets: TicketTier[] = [
+  const tickets: TicketTier[] = event?.basePricing?.length > 0 
+    ? event.basePricing.map((bp: any, index: number) => ({
+        id: `t${index + 1}`,
+        name: bp.category,
+        price: bp.price,
+        status: "available",
+        description: `Entry to the ${bp.category} arena.`,
+      }))
+    : [
     {
       id: "t1",
       name: "SILVER STANDING",
@@ -107,6 +118,12 @@ export default function EventTicketsClient({ event }: { event: any }) {
   };
 
   const handleProceedToPay = async () => {
+    if (status === "unauthenticated") {
+      toast.error("Please login first to book tickets!", { icon: "🔒" });
+      router.push("/login?callbackUrl=" + encodeURIComponent(window.location.pathname + window.location.search));
+      return;
+    }
+
     setIsProcessing(true);
     
     try {

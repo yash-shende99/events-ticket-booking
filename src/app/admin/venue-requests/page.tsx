@@ -108,16 +108,26 @@ export default function AdminVenueRequests() {
                   {/* Middle Column: Request Details */}
                   <div className="flex-1 space-y-4 md:border-l md:border-gray-100 md:pl-6">
                     <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Requested Venue</p>
-                        <p className="font-medium text-gray-900">{req.venueId?.name}</p>
-                        <p className="text-sm text-gray-500 flex items-center gap-1"><MapPin className="w-3 h-3"/> {req.venueId?.city}</p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Screen / Hall</p>
-                        <p className="font-medium text-gray-900">{screenName}</p>
-                        <p className="text-sm text-gray-500">Cap Required: {req.capacityRequested}</p>
-                      </div>
+                      {req.isEvent ? (
+                        <div className="col-span-2">
+                          <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Event Location</p>
+                          <p className="font-medium text-gray-900">{req.eventLocation}</p>
+                          <p className="text-sm text-gray-500">Cap Required: {req.capacityRequested}</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div>
+                            <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Requested Venue</p>
+                            <p className="font-medium text-gray-900">{req.venueId?.name}</p>
+                            <p className="text-sm text-gray-500 flex items-center gap-1"><MapPin className="w-3 h-3"/> {req.venueId?.city}</p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-500 uppercase font-bold tracking-wider mb-1">Screen / Hall</p>
+                            <p className="font-medium text-gray-900">{screenName}</p>
+                            <p className="text-sm text-gray-500">Cap Required: {req.capacityRequested}</p>
+                          </div>
+                        </>
+                      )}
                     </div>
 
                     <div className="bg-gray-50 p-3 rounded-xl border border-gray-100">
@@ -164,7 +174,7 @@ export default function AdminVenueRequests() {
                     
                     {req.status === "Approved" && (
                       <Link 
-                        href={`/admin/schedule?movieId=${req.movieId?._id}&venueId=${req.venueId?._id}&screenId=${req.screenId}`}
+                        href={req.isEvent ? `/admin/schedule?movieId=${req.movieId?._id}&isEvent=true&location=${encodeURIComponent(req.eventLocation || "")}` : `/admin/schedule?movieId=${req.movieId?._id}&venueId=${req.venueId?._id}&screenId=${req.screenId}`}
                         className="w-full py-2 mt-2 bg-[#f84464] hover:bg-rose-600 text-white font-bold rounded-xl shadow-sm transition flex justify-center items-center gap-2 text-sm text-center"
                       >
                         <Calendar className="w-4 h-4"/> Schedule Now

@@ -19,6 +19,7 @@ export default function NewVenueRequest() {
 
   const [formData, setFormData] = useState({
     movieId: "",
+    eventLocation: "",
     venueId: "",
     screenId: "",
     startDate: "",
@@ -55,6 +56,8 @@ export default function NewVenueRequest() {
     }
   };
 
+  const selectedMovie = movies.find(m => m._id === formData.movieId);
+  const isEvent = selectedMovie?.eventType === "Event";
   const selectedVenue = venues.find(v => v._id === formData.venueId);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -62,13 +65,26 @@ export default function NewVenueRequest() {
     setSubmitting(true);
 
     try {
+      const payload: any = {
+        movieId: formData.movieId,
+        isEvent: isEvent,
+        startDate: formData.startDate,
+        endDate: formData.endDate,
+        capacityRequested: Number(formData.capacityRequested),
+        message: formData.message,
+      };
+
+      if (isEvent) {
+        payload.eventLocation = formData.eventLocation;
+      } else {
+        payload.venueId = formData.venueId;
+        payload.screenId = formData.screenId;
+      }
+
       const res = await fetch("/api/organiser/venue-requests", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          capacityRequested: Number(formData.capacityRequested)
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
@@ -139,54 +155,71 @@ Loading form...</div>;
                 value={formData.movieId}
                 onChange={e => setFormData({ ...formData, movieId: e.target.value })}
               >
-                <option value="">-- Select Movie --</option>
+                <option value="">-- Select Listing --</option>
                 {movies.map(m => (
-                  <option key={m._id} value={m._id}>{m.title}</option>
+                  <option key={m._id} value={m._id}>{m.title} ({m.eventType || 'Movie'})</option>
                 ))}
               </select>
               {movies.length === 0 && (
-                <p className="text-sm text-red-500 mt-2">You haven't created any movies yet. Please create a movie first.</p>
+                <p className="text-sm text-red-500 mt-2">You haven't created any listings yet. Please create one first.</p>
               )}
             </div>
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">
             <h2 className="text-lg font-bold text-gray-900 border-b border-gray-100 pb-2 flex items-center gap-2">
-              <Building2 className="w-5 h-5 text-[#f84464]" /> 2. Choose Venue & Screen
+              <Building2 className="w-5 h-5 text-[#f84464]" /> 2. {isEvent ? 'Event Location' : 'Choose Venue & Screen'}
             </h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Venue</label>
-                <select
-                  required
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#f84464]/20 focus:border-[#f84464] outline-none"
-                  value={formData.venueId}
-                  onChange={e => setFormData({ ...formData, venueId: e.target.value, screenId: "" })}
-                >
-                  <option value="">-- Browse Venues --</option>
-                  {venues.map(v => (
-                    <option key={v._id} value={v._id}>{v.name} ({v.city})</option>
-                  ))}
-                </select>
+            
+            {isEvent ? (
+              <div className="grid grid-cols-1 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Location / Address</label>
+                  <input
+                    required
+                    type="text"
+                    placeholder="e.g. Central Park, NY or The Grand Arena"
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#f84464]/20 focus:border-[#f84464] outline-none"
+                    value={formData.eventLocation}
+                    onChange={e => setFormData({ ...formData, eventLocation: e.target.value })}
+                  />
+                </div>
               </div>
-              
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Screen / Hall</label>
-                <select
-                  required
-                  disabled={!formData.venueId}
-                  className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#f84464]/20 focus:border-[#f84464] outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
-                  value={formData.screenId}
-                  onChange={e => setFormData({ ...formData, screenId: e.target.value })}
-                >
-                  <option value="">-- Select Screen --</option>
-                  {selectedVenue?.screens?.map((s: any) => (
-                    <option key={s._id} value={s._id}>{s.name} (Cap: {s.capacity || 'N/A'})</option>
-                  ))}
-                  <option value="Any">Any Available Screen</option>
-                </select>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Venue</label>
+                  <select
+                    required
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#f84464]/20 focus:border-[#f84464] outline-none"
+                    value={formData.venueId}
+                    onChange={e => setFormData({ ...formData, venueId: e.target.value, screenId: "" })}
+                  >
+                    <option value="">-- Browse Venues --</option>
+                    {venues.map(v => (
+                      <option key={v._id} value={v._id}>{v.name} ({v.city})</option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Preferred Screen / Hall</label>
+                  <select
+                    required
+                    disabled={!formData.venueId}
+                    className="w-full border border-gray-300 rounded-xl px-4 py-3 focus:ring-2 focus:ring-[#f84464]/20 focus:border-[#f84464] outline-none disabled:bg-gray-100 disabled:cursor-not-allowed"
+                    value={formData.screenId}
+                    onChange={e => setFormData({ ...formData, screenId: e.target.value })}
+                  >
+                    <option value="">-- Select Screen --</option>
+                    {selectedVenue?.screens?.map((s: any) => (
+                      <option key={s._id} value={s._id}>{s.name} (Cap: {s.capacity || 'N/A'})</option>
+                    ))}
+                    <option value="Any">Any Available Screen</option>
+                  </select>
+                </div>
               </div>
-            </div>
+            )}
           </div>
 
           <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 space-y-6">

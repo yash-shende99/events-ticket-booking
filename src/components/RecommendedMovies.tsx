@@ -13,7 +13,7 @@ export default async function RecommendedMovies() {
   let movies = cms?.featuredMovies || [];
 
   if (movies.length === 0) {
-    movies = await Movie.find({}).sort({ _id: -1 }).limit(10).lean();
+    movies = await Movie.find({ eventType: { $ne: "Event" } }).sort({ _id: -1 }).limit(10).lean();
   }
 
   return (

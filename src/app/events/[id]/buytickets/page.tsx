@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { Event } from "@/models/Event";
+import { Movie } from "@/models/Movie";
 import connectDB from "@/lib/db";
 import EventTicketsClient from "@/components/events/buytickets/EventTicketsClient";
 import React from "react";
@@ -9,15 +10,29 @@ export default async function EventBuyTicketsPage({ params, searchParams }: { pa
   
   await connectDB();
   
-  let event;
-  try {
-    event = await Event.findById(resolvedParams.id).lean();
-  } catch (error) {
-    event = null;
-  }
+  let event = await Event.findById(resolvedParams.id).lean();
+  let mappedEvent: any = null;
 
-  if (!event) {
-    return notFound();
+  if (event) {
+    mappedEvent = {
+      ...event,
+      _id: event._id.toString(),
+    };
+  } else {
+    const movieEvent = await Movie.findById(resolvedParams.id).lean();
+    
+    if (!movieEvent || movieEvent.eventType !== "Event") {
+      return notFound();
+    }
+    
+    mappedEvent = {
+      ...movieEvent,
+      _id: movieEvent._id.toString(),
+      title: movieEvent.title,
+      category: movieEvent.genres && movieEvent.genres.length > 0 ? movieEvent.genres[0] : "Event",
+      price: movieEvent.basePricing && movieEvent.basePricing.length > 0 ? movieEvent.basePricing[0].price.toString() : "500",
+      basePricing: movieEvent.basePricing,
+    };
   }
 
   return (
@@ -27,10 +42,10 @@ export default async function EventBuyTicketsPage({ params, searchParams }: { pa
         <div className="max-w-7xl mx-auto px-4 lg:px-8 flex flex-col md:flex-row md:items-center justify-between">
           <div>
             <h1 className="text-3xl font-bold mb-2 tracking-wide text-white">
-              {event.title}
+              {mappedEvent.title}
             </h1>
             <div className="text-gray-300 text-sm mt-2 flex items-center gap-2">
-              <span className="border border-gray-400 rounded-full px-3 py-0.5 font-medium">{event.category || 'Event'}</span>
+              <span className="border border-gray-400 rounded-full px-3 py-0.5 font-medium">{mappedEvent.category || 'Event'}</span>
               <span>•</span>
               <span>Pune</span>
             </div>
@@ -57,7 +72,7 @@ export default async function EventBuyTicketsPage({ params, searchParams }: { pa
       </div>
       
       {/* Main Client Component - Serialize the Mongoose Object */}
-      <EventTicketsClient event={JSON.parse(JSON.stringify(event))} />
+      <EventTicketsClient event={JSON.parse(JSON.stringify(mappedEvent))} />
     </div>
   );
 }

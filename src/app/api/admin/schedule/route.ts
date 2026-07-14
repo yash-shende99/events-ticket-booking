@@ -53,6 +53,8 @@ export async function POST(req: Request) {
     
     const {
       eventId,
+      isEvent,
+      eventLocation,
       theaterId,
       screen,
       capacity,
@@ -76,33 +78,33 @@ export async function POST(req: Request) {
     const CLEANING_BUFFER_MINS = 30;
     const totalSlotMins = movieDurationMins + CLEANING_BUFFER_MINS;
 
-    // Fetch existing showtimes for the same theater, screen, and date
-    const existingShowtimes = await Showtime.find({
-      theater: theaterId,
-      screen: screen,
-      date: date
-    });
+    // Check for overlaps ONLY if it's a Movie (because it happens at a physical Theater/Screen)
+    if (!isEvent) {
+      // Fetch existing showtimes for the same theater, screen, and date
+      const existingShowtimes = await Showtime.find({
+        theater: theaterId,
+        screen: screen,
+        date: date
+      });
 
-    // Check for overlaps
-    for (const requestedTimeStr of timings) {
-      const reqStartMins = parseTimeToMinsFromMidnight(requestedTimeStr);
-      const reqEndMins = reqStartMins + totalSlotMins;
+      // Check for overlaps
+      for (const requestedTimeStr of timings) {
+        const reqStartMins = parseTimeToMinsFromMidnight(requestedTimeStr);
+        const reqEndMins = reqStartMins + totalSlotMins;
 
-      for (const existingShow of existingShowtimes) {
-        // We need existing show's duration. If we don't have it on Showtime model, fetch its movie
-        // Wait, to be safe, assume standard 150 mins if not easily available, or fetch it.
-        // Actually, we can fetch the existing movie durations to be exact.
-        const existingMovie = await Movie.findById(existingShow.movie);
-        const exDurationMins = existingMovie ? parseDurationToMins(existingMovie.duration) : 120;
-        
-        const exStartMins = parseTimeToMinsFromMidnight(existingShow.time);
-        const exEndMins = exStartMins + exDurationMins + CLEANING_BUFFER_MINS;
+        for (const existingShow of existingShowtimes) {
+          const existingMovie = await Movie.findById(existingShow.movie);
+          const exDurationMins = existingMovie ? parseDurationToMins(existingMovie.duration) : 120;
+          
+          const exStartMins = parseTimeToMinsFromMidnight(existingShow.time);
+          const exEndMins = exStartMins + exDurationMins + CLEANING_BUFFER_MINS;
 
-        // Overlap logic: newStart < exEnd AND newEnd > exStart
-        if (reqStartMins < exEndMins && reqEndMins > exStartMins) {
-          return NextResponse.json({ 
-            error: `Double Booking Conflict! Slot ${requestedTimeStr} overlaps with an existing show at ${existingShow.time}.` 
-          }, { status: 400 });
+          // Overlap logic: newStart < exEnd AND newEnd > exStart
+          if (reqStartMins < exEndMins && reqEndMins > exStartMins) {
+            return NextResponse.json({ 
+              error: `Double Booking Conflict! Slot ${requestedTimeStr} overlaps with an existing show at ${existingShow.time}.` 
+            }, { status: 400 });
+          }
         }
       }
     }
@@ -110,8 +112,10 @@ export async function POST(req: Request) {
     // Bulk construct Showtime documents
     const showtimesToCreate = timings.map(time => ({
       movie: eventId,
-      theater: theaterId,
-      screen,
+      isEvent: isEvent || false,
+      eventLocation: isEvent ? eventLocation : undefined,
+      theater: !isEvent ? theaterId : undefined,
+      screen: !isEvent ? screen : undefined,
       capacity,
       date,
       time,

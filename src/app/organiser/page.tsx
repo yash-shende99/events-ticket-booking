@@ -102,9 +102,7 @@ export default function OrganiserDashboard() {
             <Link href="/organiser/marketing" title="Marketing & Promos" className="p-2 text-gray-500 hover:text-[#f84464] hover:bg-rose-50 rounded-lg transition">
               <Megaphone className="w-5 h-5" />
             </Link>
-            <Link href="/organiser/settings" title="Venue Settings" className="p-2 text-gray-500 hover:text-[#f84464] hover:bg-rose-50 rounded-lg transition">
-              <Settings className="w-5 h-5" />
-            </Link>
+
           </div>
           <Link href="/organiser/validation" className="text-sm font-bold text-gray-700 hover:text-[#f84464] border-2 border-gray-200 hover:border-[#f84464] bg-white px-4 py-2 rounded-lg transition flex items-center gap-2">
             <QrCode className="w-4 h-4" /> QR Validation
@@ -247,16 +245,16 @@ export default function OrganiserDashboard() {
           </div>
 
           {/* Category Wise Revenue (Pie Chart) */}
-          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-            <h3 className="text-lg font-bold text-gray-900 mb-6">Category Wise Revenue</h3>
-            <div className="h-80 w-full">
+          <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex flex-col">
+            <h3 className="text-lg font-bold text-gray-900 mb-6 shrink-0">Category Wise Revenue</h3>
+            <div className="min-h-[320px] h-[450px] w-full flex-1">
               {stats.categoryRevenue && stats.categoryRevenue.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
                       data={stats.categoryRevenue}
                       cx="50%"
-                      cy="50%"
+                      cy="40%"
                       innerRadius={60}
                       outerRadius={100}
                       paddingAngle={5}
@@ -267,7 +265,7 @@ export default function OrganiserDashboard() {
                       ))}
                     </Pie>
                     <RechartsTooltip formatter={(value) => `₹${value}`} />
-                    <Legend verticalAlign="bottom" height={36} />
+                    <Legend verticalAlign="bottom" wrapperStyle={{ paddingTop: '20px' }} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (

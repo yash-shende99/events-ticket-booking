@@ -1,4 +1,5 @@
 import Link from "next/link";
+import ListYourShowLink from "./ListYourShowLink";
 
 export default function SubNavbar() {
   return (
@@ -12,9 +13,9 @@ export default function SubNavbar() {
 
         {/* Right Links */}
         <div className="flex items-center gap-6 text-xs">
-          <Link href="/" className="hover:text-gray-900 transition">ListYourShow</Link>
+          <ListYourShowLink />
           <Link href="/corporates" className="hover:text-gray-900 transition">Corporates</Link>
-          <Link href="/" className="hover:text-gray-900 transition">Offers</Link>
+          <Link href="/offers" className="hover:text-gray-900 transition">Offers</Link>
         </div>
       </div>
     </nav>

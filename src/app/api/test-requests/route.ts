@@ -7,10 +7,12 @@ export const dynamic = "force-dynamic";
 export async function GET() {
   try {
     await connectDB();
-    const movies = await Movie.find({ eventType: { $ne: "Event" } }).sort({ _id: -1 }).lean();
-    return NextResponse.json(movies);
+    const requests = await Movie.find({ 
+        status: { $in: ["Pending Admin Approval", "Approved"] } 
+    }).sort({ createdAt: -1 });
+    
+    return NextResponse.json(requests);
   } catch (error: any) {
-    console.error("Fetch Movies Error:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
