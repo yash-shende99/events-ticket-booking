@@ -43,7 +43,7 @@ To experience the full system architecture, use the following pre-configured dem
 
 ## 1. System Architecture
 
-The platform operates on a modernized **Next.js 15 App Router** architecture, leveraging React Server Components for highly optimized initial page loads (SEO-friendly) and Client Components for dynamic, real-time interactivity (Seat Map selection).
+<p align="justify">The platform operates on a modernized **Next.js 15 App Router** architecture, leveraging React Server Components for highly optimized initial page loads (SEO-friendly) and Client Components for dynamic, real-time interactivity (Seat Map selection).</p>
 
 ```mermaid
 graph TD
@@ -86,7 +86,7 @@ graph TD
 
 ## 2. Database Schema Overview (ER Diagram)
 
-The database strictly enforces relational integrity within a NoSQL environment using Mongoose `ObjectIds` and `Populate` commands.
+<p align="justify">The database strictly enforces relational integrity within a NoSQL environment using Mongoose `ObjectIds` and `Populate` commands.</p>
 
 ```mermaid
 erDiagram
@@ -230,10 +230,10 @@ erDiagram
 ## 3. High-Concurrency & Concurrency Explanation
 
 ### The Double-Booking Threat
-In high-demand ticketing scenarios (e.g., a massive Marvel movie release or a Taylor Swift concert), it is common for thousands of users to view the exact same Seat Map simultaneously. If 100 users click on seat `A1` at the exact same millisecond, a standard dual-step database query (`find()` -> verify -> `save()`) creates a massive Race Condition. Multiple users will successfully bypass the verification step before the database commits the first save, resulting in catastrophic double-booking.
+<p align="justify">In high-demand ticketing scenarios (e.g., a massive Marvel movie release or a Taylor Swift concert), it is common for thousands of users to view the exact same Seat Map simultaneously. If 100 users click on seat `A1` at the exact same millisecond, a standard dual-step database query (`find()` -> verify -> `save()`) creates a massive Race Condition. Multiple users will successfully bypass the verification step before the database commits the first save, resulting in catastrophic double-booking.</p>
 
 ### The Solution: MongoDB Atomic Operations
-We completely eliminate application-level race conditions by pushing the concurrency check directly to the database lock level using MongoDB's atomic `findOneAndUpdate` combined with strict conditional matching.
+<p align="justify">We completely eliminate application-level race conditions by pushing the concurrency check directly to the database lock level using MongoDB's atomic `findOneAndUpdate` combined with strict conditional matching.</p>
 
 **The Execution Logic:**
 ```javascript
@@ -299,7 +299,7 @@ sequenceDiagram
 
 ### 4.1 Waitlist Implementation (Deep Dive)
 
-When a booking is cancelled, the system executes this atomic sequence to find the next waiting user:
+<p align="justify">When a booking is cancelled, the system executes this atomic sequence to find the next waiting user:</p>
 
 ```javascript
 // Serverless API Action (/api/waitlist/process-cancellation)
@@ -327,7 +327,7 @@ if (nextInLine) {
 
 ## 5. Database Indexing & Performance 🚀
 
-To support high-concurrency read/writes during massive event drops, the MongoDB database relies on heavily optimized indexes:
+<p align="justify">To support high-concurrency read/writes during massive event drops, the MongoDB database relies on heavily optimized indexes:</p>
 
 ```javascript
 // 1. Core Concurrency Index (Fast seat availability lookup)
@@ -348,7 +348,7 @@ SeatSchema.index(
 
 ## 6. Security & Role-Based Access Control 🔒
 
-The platform employs strict API and Route-level guarding via Next.js Middleware and NextAuth JWTs.
+<p align="justify">The platform employs strict API and Route-level guarding via Next.js Middleware and NextAuth JWTs.</p>
 
 ```typescript
 // middleware.ts snippet
@@ -447,7 +447,7 @@ yarn dev
 
 ## 📸 10. Application Gallery
 
-Here's a visual walkthrough of the CineVerse experience, from discovery to checkout to management.
+<p align="justify">Here's a visual walkthrough of the CineVerse experience, from discovery to checkout to management.</p>
 
 <div align="center">
 
