@@ -54,7 +54,7 @@ export default function Footer() {
         {/* Links Section */}
         <div className="text-sm mb-8 space-y-4">
           <div>
-            <h4 className="text-gray-400 mb-2 uppercase text-xs font-bold tracking-wider">Movies Now Showing in Mumbai</h4>
+            <h4 className="text-gray-400 mb-2 uppercase text-xs font-bold tracking-wider">Movies Now Showing</h4>
             <div className="flex flex-wrap gap-2 text-gray-500">
               <Link href="/" className="hover:text-white transition">Spider-Man: Brand New Day</Link> | 
               <Link href="/" className="hover:text-white transition">The Odyssey</Link> | 
