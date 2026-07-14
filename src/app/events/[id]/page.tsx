@@ -17,6 +17,7 @@ export default async function EventDetailsPage({ params }: { params: Promise<{ i
     mappedEvent = {
       ...event,
       _id: event._id.toString(),
+      organiserId: event.organiserId ? event.organiserId.toString() : undefined,
     };
   } else {
     // 2. If not found, try to find in new unified Movie collection

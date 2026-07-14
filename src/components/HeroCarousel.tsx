@@ -1,29 +1,38 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { useState, useEffect } from "react";
+
+type Banner = { image: string; link: string };
 
 export default function HeroCarousel() {
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [banners, setBanners] = useState<string[]>([]);
+  const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     fetch("/api/admin/cms")
       .then(res => res.json())
       .then(data => {
-        if (data?.homepageBanners?.length > 0) {
+        if (data?.homepageBanners?.length > 0 && typeof data.homepageBanners[0] === 'object') {
           setBanners(data.homepageBanners);
         } else {
-          // Fallback banners if CMS is empty
+          // Fallback banners if CMS is empty or using old format
           setBanners([
-            "/assets/1783601830831_ks1240x300jpg.jpeg",
-            "/assets/1778484693811_filmcitydesktop.jpeg"
+            { image: "/assets/movies/obsession_hero_image.jpg", link: "/movies/6a53093f4f19b2c9654a08c6" },
+            { image: "/assets/movies/dhamaal4_hero_poster.jpeg", link: "/movies/6a5323ab94d2356038d82dd0" }
           ]);
         }
         setLoading(false);
       })
-      .catch(() => setLoading(false));
+      .catch(() => {
+        setBanners([
+          { image: "/assets/movies/obsession_hero_image.jpg", link: "/movies/6a53093f4f19b2c9654a08c6" },
+          { image: "/assets/movies/dhamaal4_hero_poster.jpeg", link: "/movies/6a5323ab94d2356038d82dd0" }
+        ]);
+        setLoading(false);
+      });
   }, []);
 
   // Auto-scroll logic
@@ -45,16 +54,16 @@ export default function HeroCarousel() {
           style={{ transform: `translateX(-${currentIndex * 100}%)` }}
         >
           {banners.map((banner, index) => (
-            <div key={index} className="w-full shrink-0">
+            <Link href={banner.link} key={index} className="w-full shrink-0 block">
               <Image 
-                src={banner} 
+                src={banner.image} 
                 alt={`Banner ${index + 1}`} 
                 width={1240} 
                 height={300} 
                 className="w-full h-auto object-cover"
                 priority={index === 0}
               />
-            </div>
+            </Link>
           ))}
         </div>
 
