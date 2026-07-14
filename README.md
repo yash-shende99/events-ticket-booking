@@ -31,27 +31,11 @@ To experience the full system architecture, use the following pre-configured dem
 
 ## ✨ Key Technical Achievements
 
-- **Unified Super Schema:** Supports both traditional Movie Screenings (with interactive seat mapping) and Live Events (with dynamic pricing tiers) seamlessly.
-- **High-Concurrency Seat Holding Engine:** Prevents double-booking using atomic database transactions and a strict 10-minute hold TTL via database-level expiry and real-time state calculation.
-- **Automated Waitlist Processing:** Automatically detects cancelled bookings, pulls the next user from the queue, and emails a time-limited (30 mins) priority checkout link.
-- **Hardware-Integrated QR Validation:** Organizers can scan cryptographic Ticket QRs at the venue door using webcams or hardware barcode scanners for instant validation.
-- **Real-time Analytics Dashboard:** Dynamic Recharts integration showing ticket sales trends, category-wise revenue distribution, and robust event performance comparisons.
-
----
-
-## 📸 Screenshots
-
-*(Replace the placeholder URLs with actual screenshots from your repository. You can upload them to a `/public/docs` folder or host them via GitHub issues/imgur).*
-
-### Customer Flow (Seat Selection & YouTube Trailers)
-![Seat Selection Map](https://via.placeholder.com/800x400?text=Interactive+Seat+Map+Screenshot)
-![Movie Details](https://via.placeholder.com/800x400?text=Movie+Details+%26+Trailer+Screenshot)
-
-### Organizer Dashboard (Revenue Analytics)
-![Organizer Dashboard](https://via.placeholder.com/800x400?text=Organizer+Revenue+Dashboard+Screenshot)
-![Booking Management](https://via.placeholder.com/800x400?text=Booking+Management+Table+Screenshot)
-
----
+- 🎟️ **Unified Super Schema:** Supports both traditional Movie Screenings (with interactive seat mapping) and Live Events (with dynamic pricing tiers) seamlessly.
+- ⚡ **High-Concurrency Seat Holding Engine:** Prevents double-booking using atomic database transactions and a strict 10-minute hold TTL via database-level expiry.
+- 🤖 **Automated Waitlist Processing:** Automatically detects cancelled bookings, pulls the next user from the queue, and emails a time-limited (30 mins) priority checkout link.
+- 📱 **Hardware-Integrated QR Validation:** Organizers can scan cryptographic Ticket QRs at the venue door using webcams or hardware barcode scanners for instant validation.
+- 📊 **Real-time Analytics Dashboard:** Dynamic Recharts integration showing ticket sales trends, category-wise revenue distribution, and robust event performance comparisons.
 
 ## 1. System Architecture
 
@@ -311,6 +295,9 @@ sequenceDiagram
 
 ## 5. Setup & Local Development Guide
 
+<details>
+<summary><strong>🛠️ Click to expand setup instructions</strong></summary>
+
 ### Prerequisites
 - Node.js 18+
 - MongoDB instance (Atlas or local)
@@ -356,9 +343,11 @@ yarn dev
 
 4. Open [http://localhost:3000](http://localhost:3000) with your browser.
 
+</details>
+
 ---
 
-## 7. Project Structure (Monorepo)
+## 6. Project Structure (Monorepo)
 
 ```text
 ├── src/
@@ -375,6 +364,9 @@ yarn dev
 ├── public/                 # Static assets (fonts, icons, default images)
 └── tailwind.config.ts      # Global styling system
 ```
+
+---
+
 ## 7. API Design & Documentation
 
 - `POST /api/showtimes/[id]/hold-seats` - Validates seat availability and atomically applies a hold TTL.
@@ -382,3 +374,17 @@ yarn dev
 - `POST /api/waitlist/[id]/join` - Adds a user to the seat waitlist queue.
 - `POST /api/wishlist` - Synchronizes user event interest tracking.
 - `GET /api/organiser/stats` - Aggregates secure venue-level revenue analytics for the Organizer dashboard.
+
+---
+
+## 📸 8. Screenshots
+
+*(Replace the placeholder URLs with actual screenshots from your repository. You can upload them to a `/public/docs` folder or host them via GitHub issues/imgur).*
+
+### Customer Flow (Seat Selection & YouTube Trailers)
+![Seat Selection Map](https://via.placeholder.com/800x400?text=Interactive+Seat+Map+Screenshot)
+![Movie Details](https://via.placeholder.com/800x400?text=Movie+Details+%26+Trailer+Screenshot)
+
+### Organizer Dashboard (Revenue Analytics)
+![Organizer Dashboard](https://via.placeholder.com/800x400?text=Organizer+Revenue+Dashboard+Screenshot)
+![Booking Management](https://via.placeholder.com/800x400?text=Booking+Management+Table+Screenshot)
